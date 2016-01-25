@@ -6,7 +6,7 @@
 </head>
 <body>
 
-<h1>'Informe Setembre Energythatmatters v6.1</h1>
+<h1>Informe Setembre Energythatmatters v6.1</h1>
 
 <div>
   <button id="prev">Previ</button>
@@ -16,7 +16,7 @@
 </div>
 
 <div>
-  <canvas id="the-canvas" style="border:1px solid black"></canvas>
+  <canvas id="mobile" style="border:1px solid black"></canvas>
 </div>
 
 <!-- for legacy browsers add compatibility.js -->
@@ -134,6 +134,27 @@
     // Initial/first page rendering
     renderPage(pageNum);
   });
+
+  //Resize function for desktop and mobile browsers, it does not work with Wkhtmltopdf
+
+  document.ready(resSize);
+  window.resize(resSize);
+
+  function resSize()
+  {
+    var mobileMaxWidth= 1000; //Define this to whatever size you want, original: var mobileMaxWidth=560;
+    if($(window).width() < mobileMaxWidth) //original: if($(window).width() > mobileMaxWidth)
+    {
+        $("div#desktop").hide();
+        $("div#mobile").show(); 
+    }
+    else
+    {
+        $("div#desktop").show();
+        $("div#mobile").hide(); 
+    }
+  };
+
 </script>
 
 </body>
