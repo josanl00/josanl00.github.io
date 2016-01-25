@@ -15,16 +15,26 @@
   <span>Pàgina: <span id="page_num"></span> / <span id="page_count"></span></span>
 </div>
 
+
 <div>
   <canvas id="the-canvas" style="border:1px solid black"></canvas>
 </div>
+
+
+
+<div>
+  <canvas id="the-canvas" style="border:1px solid black"></canvas>
+</div>
+
+
+
 
 <!-- for legacy browsers add compatibility.js -->
 <!--<script src="../compatibility.js"></script>-->
 
 <script src="build/pdf.js"></script>
 
-<script id="mobile">
+<script id="script">
   //
   // If absolute URL from the remote server is provided, configure the CORS
   // header on that server.
@@ -50,7 +60,7 @@
       pageNum = 1,
       pageRendering = false,
       pageNumPending = null,
-      scale = 1,
+      scale = 100%,
       canvas = document.getElementById('the-canvas'),
       ctx = canvas.getContext('2d');
 
@@ -135,25 +145,6 @@
     renderPage(pageNum);
   });
 
-  //Resize function for desktop and mobile browsers, it does not work with Wkhtmltopdf
-
-  document.ready(resSize);
-  window.resize(resSize);
-
-  function resSize()
-  {
-    var mobileMaxWidth= 1000; //Define this to whatever size you want, original: var mobileMaxWidth=560;
-    if($(window).width() < mobileMaxWidth) //original: if($(window).width() > mobileMaxWidth)
-    {
-        $("div#desktop").hide();
-        $("div#mobile").show(); 
-    }
-    else
-    {
-        $("div#desktop").show();
-        $("div#mobile").hide(); 
-    }
-  };
 
 </script>
 
