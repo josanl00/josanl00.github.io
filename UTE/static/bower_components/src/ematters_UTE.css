@@ -1,0 +1,479 @@
+/*Making html configuration view*/
+
+/*...When MyriadPro does not work in any webbrowser...*/
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:300,600);
+
+body {
+    font-family: 'MyriadPro','Open Sans', sans-serif;
+    font-size: 24px;
+}
+
+/*Making autoresized SVG charts*/
+.svg-container-ct105 {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 50%; /*original was 100%; aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+}
+.svg-container-ot103 {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 40%; /*original was 100%; aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+}
+.svg-container-ot302a {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 50%; /*original was 100%; aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+}
+.svg-container-ot102 {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 55%; /*original was 100%; aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+}
+.svg-container-ot201 {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 50%; /*original was 100%; aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+}
+.svg-container-ot503 {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 50%; /*original was 100%; aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+}
+.svg-container-ot401 {
+    display: inline-block;
+    position: relative;
+    padding-bottom: 1%; /*original was 100%; aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+}
+.svg-content-responsive {
+    display: inline-block;
+    position: absolute;
+    top: 0px;
+    left: 0;
+}
+
+/*Making definition of titles*/
+.title-section h1 {
+    background-color: #84e464;
+    color: #ffffff;
+    font-size: 175%;
+    /*font-weight: bold;*/
+    text-transform: uppercase;
+}
+.title-section-white h1 {
+    margin: 0px;
+    color: #909090;
+    font-size: 166%;
+    /*font-weight: bold;*/
+    text-transform: uppercase;
+}
+.title-question h1{
+    margin-top: .5em;
+    color: #909090;
+    font-size: 166%;
+    text-transform: uppercase;
+}
+.hrspacing { 
+    padding-right:15px;
+    padding-left:15px;
+}
+.hrcolor {
+    border-color: #C0C0C0;
+    border-style: solid;
+    border-bottom: 1px;
+    margin-top:15px;
+    margin-bottom:15px;
+    /*padding:0px;*/
+}
+.hrcolor1 {
+    border-color: #C0C0C0;
+    border-style: solid;
+    border-bottom: 1px;
+    margin-top:0px;
+    margin-bottom:15px;
+    /*padding:0px;*/
+}
+.vrspacing {
+    border-left: 1px solid #C0C0C0;
+ }
+
+/*Making OT101 service*/
+.user-ot101result {
+    text-align: center;
+    margin-top: 0.5em;
+    /*line-height: 250%;*/
+}
+.chart-ot101 {
+    text-align: right;
+    margin-top: 1em;
+}
+.chart-ot101-info {
+    margin-top: 0.7em;
+    text-align: center;
+    /*line-height: 120%;*/
+    margin-bottom: 0.6em;
+}
+.chart-ot101-info1 {
+    margin-top: 1.3em;
+    text-align: center;
+    line-height: 120%;
+    margin-bottom: 0.2em;
+}
+.ot101.consumption {
+    color: #84E464;
+}
+.ot101.averageEffConsumption {
+    color: #909090;
+}
+.ot101.averageConsumption path {
+    fill: #494949;
+}
+.ot101.averageConsumption .icons, .ot101.averageConsumption .label {
+    fill: #494949;
+}
+.ot101.averageConsumption line {
+    stroke: #494949;
+    stroke-width: 4px;
+}
+.ot101.consumption path {
+    fill: #84E464;
+}
+.ot101.consumption .icons, .ot101.consumption .label {
+    fill: #84E464;
+}
+.ot101.consumption line {
+    stroke: #84E464;
+    stroke-width: 4px;
+}
+.ot101.averageEffConsumption path {
+    fill: #909090;
+}
+.ot101.averageEffConsumption .icons, .ot101.averageEffConsumption .label {
+    fill: #909090;
+} 
+.ot101.averageEffConsumption line {
+    stroke: #909090;
+    stroke-width: 4px;
+}
+.ot101 .value, .ot201 .value {
+  fill: white;
+  text-anchor: middle;
+  /*font-weight: bolder;*/
+}
+.classification-ot101 {
+    margin-top: .5em;
+    font-size: 95%;
+    line-height: 200%;
+    color: #d3d3d3;
+}
+.classification-ot101-text {
+    margin-top: .5em;
+    text-align:justify;
+    font-size: 95%;
+    line-height: 120%;
+    margin-bottom: 0.2em;
+}
+.classification-ot101 > .active {
+    /*font-weight: bold;*/
+    font-size: 258%;
+}
+#smiley-winner.active {
+    color: #84E464;
+}
+#smiley-great.active {
+    color: #84E464;
+}
+#smiley-good.active {
+    color: #84E464;
+}
+#smiley-bad.active {
+    color: #84E464;
+}
+
+/*Making OT102 service*/
+.user-ot102result {
+    text-align: center;
+    font-size: 95%;
+    margin-top: 0px;
+    margin-bottom: 0.5em;
+    line-height: 120%;
+}
+.chart-ot102 {
+
+}
+.chart-text {
+  fill: purple;
+}
+.chart-color1 {
+  fill: #33a357;
+}
+.chart-color2 {
+  fill: #79b752;
+}
+.chart-color3 {
+  fill: #c3d545;
+}
+.chart-color4 {
+  fill: #fff12c;
+}
+.chart-color5 {
+  fill: #edb731;
+}
+.chart-color6 {
+  fill: #d66f2c;
+}
+.chart-color7 {
+  fill: #cc232a;
+}
+.needle,
+.needle-center {
+  fill: #464A4F;
+}
+
+/*Making OT103 service*/
+.chart-ot103 {
+    text-align: center;
+    margin-top: 0.5em;
+    margin-left: 0em;
+    margin-bottom: 0.1em;
+}
+.user-ot103result {
+    text-align: center;
+    font-size: 95%;
+    margin-top: 1em;
+    line-height: 120%;
+}
+.ot103 .legend text {
+    font-weight: bold;
+}
+.ot103 .line {
+  fill: none;
+  /*stroke-width: 2.5px;*/
+  stroke-width: 4px;
+}
+.ot103 .line.averageConsumption {
+    stroke: #494949;
+}
+.ot103 .legend .averageConsumption {
+    fill: #494949;
+}
+.ot103 .line.consumption {
+    stroke: #84E464;
+    stroke-width: 5.5px;
+}
+.ot103 .legend .consumption {
+    fill: #84E464;
+}
+.ot103 .line.averageEffConsumption {
+    stroke: #909090;
+}
+.ot103 .legend .averageEffConsumption {
+    fill: #909090;
+}
+.ot103 .point {
+    stroke-width: 2px;
+    stroke: #fff;
+}
+.point.averageConsumption {
+    fill: #494949;
+}
+.point.consumption {
+    fill: #84E464;
+}
+.point.averageEffConsumption {
+    fill: #909090;
+}
+.axis path,
+.axis line {
+  /*fill: none;*/
+  stroke-width: 1px;
+  stroke: #C0C0C0;
+}
+.x.axis line {
+    stroke-width: 1px;
+    stroke: #C0C0C0;
+}
+.axis path, .y.axis line {
+    display: none;
+}
+.x.vertical {
+    stroke-width: 1px;
+    stroke: #C0C0C0;
+}
+.ot103 text {
+    font-size: 75%;
+    font-weight: bolder;
+}
+
+/*Making OT201 service*/
+.user-ot201result {
+    text-align: center;
+    font-size: 95%;
+    margin-top: 1.1em;
+    margin-bottom: 0.5em;
+    line-height: 120%;
+}
+.chart-ot201 {
+    text-align: center;
+    margin-top: 1.55em;
+    margin-left: 0em;
+    margin-bottom: 0em;
+}
+.ot201.consumption path {
+    fill: #84E464;
+}
+.ot201.consumption .icons, .ot201.icon , .ot201.consumption .label {
+    fill: #84E464;
+}
+.ot201.consumption line {
+    stroke: #84E464;
+    stroke-width: 3px;
+}
+.ot201.consumption {
+    color: #84E464;
+}
+.ot201.previousConsumption path {
+  fill: #225C10;
+}
+.ot201.previousConsumption .icons, .ot201.previousConsumption .label {
+  fill: #225C10;
+}
+.ot201.previousConsumption line {
+    stroke: #225C10;
+    stroke-width: 2px;
+}
+.ot201.previousConsumption {
+    color: #225C10;
+}
+
+/*Making OT302 service*/
+.user-ot302result {
+    text-align: justify;
+    font-size: 95%;
+    margin-bottom: 0.5em;
+    line-height: 120%;
+}
+.chart-ot302a {
+    text-align: left;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+}
+.chart-ot302b {
+    margin-top: 0.5em;
+}
+
+/*Making OT401 service*/
+.chart-ot401 {
+    margin-top: 1em;
+}
+.ot401 .tip {
+    /*float: right;*/
+    text-align: justify;
+    font-size: 95%;
+    line-height: 120%;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+.ot401 .tip .icon {
+    float: left;
+    margin-right: 8px;
+    color: #84E464;
+}
+
+/*Making OT503 service*/
+.user-ot503result {
+    text-align: justify;
+    font-size: 95%;
+    margin-top: 1.3em;
+    margin-right: 0em;
+    margin-left: 0em;
+    margin-bottom: 0.5em;
+    line-height: 120%;
+}
+.chart-ot503 {
+    text-align: left;
+    margin-top: 0.3em;
+    margin-bottom: 0.5em;
+}
+.ot503 .legend text {
+    font-size: 66%;
+    /*font-weight: bold;*/
+    text-transform: uppercase;
+}
+.ot503 .bar {
+  fill: #84e464;
+}
+.ot503 .line {
+    fill: none;
+    stroke-width: 2.5px;
+}
+.ot503 .line.temperature {
+    stroke: #225C10;
+}
+.ot503 .point {
+    stroke-width: 2px;
+    stroke: #225C10;
+}
+.ot503 .point.temperature {
+    fill: #225C10;
+}
+
+/* Generated by Glyphter (http://www.glyphter.com) on  Tue Jan 19 2016*/
+@font-face {
+    font-family: 'new_ematters';
+    src: url('fonts/new_ematters.eot');
+    src: url('fonts/new_ematters.eot?#iefix') format('embedded-opentype'),
+         url('fonts/new_ematters.woff') format('woff'),
+         url('fonts/new_ematters.ttf') format('truetype'),
+         url('fonts/new_ematters.svg#new_ematters') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+[class*='icon-']:before{
+    display: inline-block;
+   font-family: 'new_ematters';
+   font-style: normal;
+   font-weight: normal;
+   line-height: 1;
+   -webkit-font-smoothing: antialiased;
+   -moz-osx-font-smoothing: grayscale;
+}
+.icon-TIP_2:before{content:'\0043';}
+.icon-TIP_1:before{content:'\0044';}
+.icon-TIP_4:before{content:'\0045';}
+
+@font-face {
+    font-family: 'MyriadPro';
+    src: url("fonts/MyriadPro-Light.otf") format("opentype");
+}
+
+@font-face {
+font-family: 'MyriadPro';
+font-weight: bold;
+src: url("fonts/MyriadPro-Regular.otf") format("opentype");
+}
+
+@font-face {
+font-family: 'MyriadPro';
+font-style: italic;
+src: url("fonts/MyriadPro-It.otf") format("opentype");
+}
