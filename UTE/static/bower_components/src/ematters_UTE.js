@@ -81,7 +81,15 @@ var Empowering = {};
     Empowering.Graphics = {
 
     };
-
+    //x: x-coordinate
+    // y: y-coordinate
+    //w: width
+    //h: height
+    //r: corner radius
+    //tl: top_left rounded?
+    //tr: top_right rounded?
+    //bl: bottom_left rounded?
+    //br: bottom_right rounded?
     function roundedRect(x, y, w, h, r, tl, tr, bl, br) {
         var retval;
         retval  = 'M' + (x + r) + ',' + y;
@@ -150,30 +158,32 @@ var Empowering = {};
         alert(array_keys);
         alert(array_values);*/
 
+        var tariffs = new Array();
         var cons = new Array();
         var avg = new Array();
         for (var key in cons_d || avg_d) {
+          tariffs.push(key);
           cons.push(cons_d[key]);
           avg.push(avg_d[key]);
         };
 
 
-
+console.log("tariffs", tariffs)
 console.log("cons is", cons)
 console.log("avgcons is", avg)
 
+        tariffs.sort(function(a,b) {return b-a;}); //Caution! to perform this method, keys should be ordered from more consumption (i.e. "pN") to less (i.e. "p0")
         cons.sort(function(a,b) {return b-a;});
         avg.sort(function(a,b) {return b-a;});
 
 console.log("cons is", cons)
 console.log("avgcons is", avg)
+console.log("tariffs", tariffs)
+        
         /*cons.forEach(
             function (d) {
-                //var y0 = 0;
+                var y0 = 0;
                 //d.tariffs = color.domain().map(function(name) { return {name: name, y0: y0, y1: y0 += +d[name]}; });
-                d.p1 = d.p1,
-                d.p2 = d.p2,
-                d.p3 = d.p3
             }
         );*/
 
@@ -206,6 +216,15 @@ console.log("avgcons is", avg)
         /*
         Definition of labels
         */
+        tariffs = attrs.tariffs || { //order according to sort function from more to less
+            0: 'More consumption++',
+            1: 'More consumption+',
+            2: 'More consumption',
+            3: 'Less consumption',
+            4: 'Less consumption-',
+            5: 'Less consumption--'
+        };
+console.log("tariffs", tariffs)
 
         var styles = {
           0: 'averageConsumption',
@@ -246,18 +265,26 @@ console.log("avgcons is", avg)
                    //class to make it responsive
                    .classed("svg-content-responsive", true);    
 
-        var y = d3.scale.linear()
+        /*var y = d3.scale.linear()
                 .range([barHeight, 0])
-                .domain([0, d3.max(cons)]);
+                .domain([0, d3.max(cons)]);*/
 
         var ycons = d3.scale.linear()
                 .range([barHeight, 0])
+                .domain([0, d3.max(cons)]);
+                //.domain([0, d3.max(cons,function(d,i) { return cons[i+1]-cons[i]; })]);
+
+        var xcons = d3.scale.linear()
+                .range([0, barWidth+25])
                 .domain([0, d3.max(cons)]);
         
         var yavg = d3.scale.linear()
                 .range([barHeight, 0])
                 .domain([0, d3.max(avg)]);
-        
+
+        var xavg = d3.scale.linear()
+                .range([0, barWidth+25])
+                .domain([0, d3.max(avg)]);
 
         /*
         Definition of chart details
@@ -273,7 +300,24 @@ console.log("avgcons is", avg)
             //.attr('class', function(d, i) {return 'ot101 ' + styles[i]; })
             //.attr('transform', function(d, i) {return 'translate(100,0)'; //+ i * barWidth + ', 0)';
 //          })
-;
+        ;
+
+        var legend_cons = main.selectAll('div')
+            .data(cons)
+            .enter().append('g')
+
+            .style("fill", function(d, i) { return colorin(i); })
+          
+
+            .attr('transform', 'translate(' + (width/2) + ',250)')
+            .style('font-size', '41%')
+
+            //.attr('class', function(d, i) {return 'ot101 ' + styles[i]; })
+            //.attr('transform', function(d, i) {return 'translate(100,0)'; //+ i * barWidth + ', 0)';
+//          })
+        ;
+
+
 
 
         var bar_avg = main.selectAll('div')
@@ -284,7 +328,22 @@ console.log("avgcons is", avg)
             //.attr('class', function(d, i) {return 'ot101 ' + styles[i]; })
             //.attr('transform', function(d, i) {return 'translate('+ 200 + ',100)'; //+ i * barWidth + ', 0)';
           //})
-;
+        ;
+
+        var legend_avg = main.selectAll('div')
+            .data(avg)
+            .enter().append('g')
+            .style("fill", function(d, i) { return avgcolorin(i); })
+            //.style('text-anchor', 'end')
+            .attr('transform', 'translate(' + (width/2) + ',250)')
+            .style('font-size', '41%')
+            //.attr('class', function(d, i) {return 'ot101 ' + styles[i]; })
+            //.attr('transform', function(d, i) {return 'translate(100,0)'; //+ i * barWidth + ', 0)';
+//          })
+        ;
+
+
+
 
         //ICONS
         bar_cons.append('text')
@@ -311,6 +370,7 @@ console.log("avgcons is", avg)
                 .attr("width", rectWidth+barEnerWidth-10)
                 .attr("height", 2)
                 .style("stroke-width", "1px");
+
          bar_avg.append("rect")
                 .attr("class", "line")
                 .attr("x", 10) 
@@ -324,8 +384,10 @@ console.log("avgcons is", avg)
                 .attr('d', function(d) {
                     return roundedRect(
                         rectWidth, ycons(d), barEnerWidth, barHeight - ycons(d), barEnerWidth/5, //The string "barEnerWidth/4" is referred to the radio of the rounded border 
+                        //rectWidth, ycons(d), barEnerWidth, - ycons(d), barEnerWidth/5, //The string "barEnerWidth/4" is referred to the radio of the rounded border 
                         true, true, false, false);
                 });
+
         bar_avg.append('path')
         //bar.append('path')
                 .attr('d', function(d) {
@@ -333,6 +395,66 @@ console.log("avgcons is", avg)
                         rectWidth, yavg(d), barEnerWidth, barHeight - yavg(d), barEnerWidth/5, //The string "barEnerWidth/4" is referred to the radio of the rounded border 
                         true, true, false, false);
                 });
+
+
+
+        //LEGEND WITH ROUNDED EFFECT
+        legend_cons.append('path')
+                .attr('d', function(d) {
+                    //return roundedRect(rectWidth, ycons(d), barEnerWidth, barHeight - ycons(d), barEnerWidth/5, true, true, false, false);
+                    //return roundedRect(100, 100, 100, 50, 20, false, true, false, true);
+                    //return roundedRect(100, xcons(d), 100, xcons(d)-50, 20, false, true, false, true);
+                    //return roundedRect(100, 100, xcons(d), 50, 20, false, true, false, true);
+                    return roundedRect(100, -xcons(d), 50, 25, 14, false, true, false, true);
+                });
+
+        legend_avg.append('path')
+                .attr('d', function(d) {
+                    //return roundedRect(rectWidth, ycons(d), barEnerWidth, barHeight - ycons(d), barEnerWidth/5, true, true, false, false);
+                    //return roundedRect(0, 100, 100, 50, 20, true, false, true, false);
+                    return roundedRect(50, -xavg(d), 50, 25, 14, true, false, true, false);
+
+                });
+
+
+        //var width =  400,
+        //height = 300,
+        //barWidth = width/2,
+
+        //labelSize = 24,
+        //barHeight = height - labelSize - 20,
+        //rectWidth = barWidth * 0.375,
+        //barEnerWidth = barWidth * 0.5;
+
+    //x: x-coordinate
+    // y: y-coordinate
+    //w: width
+    //h: height
+    //r: corner radius
+    //tl: top_left rounded?
+    //tr: top_right rounded?
+    //bl: bottom_left rounded?
+    //br: bottom_right rounded?
+    //function roundedRect(x, y, w, h, r, tl, tr, bl, br) 
+
+
+
+        /*bar_cons.append("rect")
+                .attr("class", "line")
+                .attr("x", rectWidth+barEnerWidth-100) 
+                .attr("y", height/2)
+                .attr("width", rectWidth+barEnerWidth-10)
+                .attr("height", 2)
+                .style("stroke-width", "1px");
+         bar_avg.append("rect")
+                .attr("class", "line")
+                .attr("x", 10) 
+                .attr("y", height/2)
+                .attr("width", rectWidth+barEnerWidth-10)
+                .attr("height", 2)
+                .style("stroke-width", "1px");*/
+
+
 
         //TEXT INSIDE BAR
         bar_cons.append('text')
@@ -351,10 +473,32 @@ console.log("avgcons is", avg)
                 .attr('y', function(d) { return yavg(d) + 15*2.5; })
                 //.attr('dy', '.' + width * 0.125 + 'em')
                 .attr('class', 'label')
-                .attr('style', 'font-size: ' + width * 0.0 + 'px')
+                //.attr('style', 'font-size: ' + width * 0.0 + 'px')
                 .attr('style', 'fill: white')
                 .attr("text-anchor", "middle")
                 .text(function(d) { return Math.round(d) + ' kWh'; });
+
+
+                //TEXT INSIDE LEGEND
+        /*legend_cons.append('text')
+                .attr('x', width/2)
+                .attr('y', function(d) { return ycons(d) + 15*2.5; })
+                //.attr('dy', '.' + width * 0.125 + 'em')
+                //.attr('style', 'font-size:' +1+'px')
+                .attr('class', 'label')
+                //.attr('style', 'font-size: 1px')
+                .attr('style', 'fill: black')
+                .attr("text-anchor", "middle")
+                .text(function(d,i) { return d + ' kWh'; });*/
+
+        legend_avg.append('text')
+        //.attr('class', 'bartext')
+                .attr('x', 100)//barWidth-width/8-(width/8)/2 )
+                .attr('y', function(d) { return -xavg(d)+16; })
+                //.attr('dy', '.' + width * 0.125 + 'em')
+                .attr('style', 'fill: white')
+                .attr("text-anchor", "middle")
+                .text(function(d,i) { return tariffs[i]; });
 
         //LABEL TEXTS
         bar_cons.append('text')
@@ -372,22 +516,6 @@ console.log("avgcons is", avg)
             .attr('class', 'label')
             .attr('style', 'font-size: ' + labelSize + 'px')
             .text(labels[0]);
-
-        //LEGEND
-        bar_cons.append("rect")
-                .attr("class", "line")
-                .attr("x", rectWidth+barEnerWidth-100) 
-                .attr("y", height/2)
-                .attr("width", rectWidth+barEnerWidth-10)
-                .attr("height", 2)
-                .style("stroke-width", "1px");
-         bar_avg.append("rect")
-                .attr("class", "line")
-                .attr("x", 10) 
-                .attr("y", height/2)
-                .attr("width", rectWidth+barEnerWidth-10)
-                .attr("height", 2)
-                .style("stroke-width", "1px");
 
         return ct105;
 

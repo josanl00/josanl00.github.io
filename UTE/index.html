@@ -52,9 +52,9 @@
         "p2" : 79.167,
         "p3" : 118.75,
         "p1" : 39.583,
-        //"p6" : 237.5,
-        //"p4" : 158.33,
-        //"p5" : 197.92
+        "p6" : 237.5,
+        "p4" : 158.33,
+        "p5" : 197.92
     },
     "companyId" : 1111111111,
     "averageEffConsumption" : {
@@ -95,9 +95,9 @@
         "p2" : 110.03,
         "p3" : 165.04,
         "p1" : 55.013,
-        //"p6" : 330.08,
-        //"p4" : 220.05,
-        //"p5" : 275.07
+        "p6" : 330.08,
+        "p4" : 220.05,
+        "p5" : 275.07
     },
     "diffAverageEffConsumption" : {
         "p2" : 47.526,
@@ -110,13 +110,21 @@
     "_created" : "2015-05-28T09:19:56.379Z",
     "month" : 201306,
     "contractId" : "cont-44"
-    };
+};
 
     var ct105 = Empowering.Graphics.CT105({
         container: "div#chartct105", data: result_ct105, 
         labels: {
-                0: "Grupos de similares",
-                1: "Tú"
+            0: "Grupos de similares",
+            1: "Tú"
+        },
+        tariffs: {
+            0: "P. Punta",
+            1: "P. Llano",
+            2: "P. Valle",
+            3: "P. Punta",
+            4: "P. Llano",
+            5: "P. Valle"
         }
     });
 </script>
