@@ -147,6 +147,7 @@ var Empowering = {};
         var colorin = d3.scale.ordinal().range(["#AECCEC", "#3278C2", "#161686"]);
         var avgcolorin = d3.scale.ordinal().range(["#F6CF9F", "#ED933D", "#FE733A"]);
 
+console.log("avg_d", avg_d)
         //Make list of arrays
         /*var a = {"apples": 3, "oranges": 4, "bananas": 42};    
         var array_keys = new Array();
@@ -159,22 +160,34 @@ var Empowering = {};
         alert(array_values);*/
 
         var tariffs = new Array();
-        var cons = new Array();
-        var avg = new Array();
-        for (var key in cons_d || avg_d) {
+        var cons_real = new Array();
+        var avg_real = new Array();
+
+        for (var key in cons_d) {
           tariffs.push(key);
-          cons.push(cons_d[key]);
-          avg.push(avg_d[key]);
+          cons_real.push(cons_d[key]);
         };
 
+        for (var key in avg_d) {
+          avg_real.push(avg_d[key]);
+        };
 
-console.log("tariffs", tariffs)
-console.log("cons is", cons)
-console.log("avgcons is", avg)
+console.log("cons is", cons_real)
+console.log("avgcons is", avg_real)
+ 
+        cons_real.sort(function(a,b) {return a-b;});
+        avg_real.sort(function(a,b) {return a-b;});
 
-        tariffs.sort(function(a,b) {return b-a;}); //Caution! to perform this method, keys should be ordered from more consumption (i.e. "pN") to less (i.e. "p0")
+        var cons = [];
+        var avg = [];
+        cons_real.reduce(function(a,b,i) { return cons[i] = a+b; },0);
+        avg_real.reduce(function(a,b,i) { return avg[i] = a+b; },0);
+
         cons.sort(function(a,b) {return b-a;});
         avg.sort(function(a,b) {return b-a;});
+        tariffs.sort(function(a,b) {return b-a;}); //Caution! to perform this method, keys should be ordered from more consumption (i.e. "pN") to less (i.e. "p0")
+        cons_real.sort(function(a,b) {return b-a;});
+        avg_real.sort(function(a,b) {return b-a;});
 
 console.log("cons is", cons)
 console.log("avgcons is", avg)
@@ -454,8 +467,6 @@ console.log("tariffs", tariffs)
                 .attr("height", 2)
                 .style("stroke-width", "1px");*/
 
-
-
         //TEXT INSIDE BAR
         bar_cons.append('text')
                 .attr('x', barWidth-width/8-(width/8)/2 )
@@ -466,7 +477,7 @@ console.log("tariffs", tariffs)
                 //.attr('style', 'font-size: 1px')
                 .attr('style', 'fill: white')
                 .attr("text-anchor", "middle")
-                .text(function(d) { return Math.round(d) + ' kWh'; });
+                .text(function(d,i) { return Math.round(cons_real[i]) + ' kWh'; });
 
         bar_avg.append('text')
                 .attr('x', barWidth-width/8-(width/8)/2)
@@ -476,7 +487,7 @@ console.log("tariffs", tariffs)
                 //.attr('style', 'font-size: ' + width * 0.0 + 'px')
                 .attr('style', 'fill: white')
                 .attr("text-anchor", "middle")
-                .text(function(d) { return Math.round(d) + ' kWh'; });
+                .text(function(d,i) { return Math.round(avg_real[i]) + ' kWh'; });
 
 
                 //TEXT INSIDE LEGEND
