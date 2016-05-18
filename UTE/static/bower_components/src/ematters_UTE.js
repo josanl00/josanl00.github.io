@@ -137,18 +137,14 @@ var Empowering = {};
         }
         var data = attrs.data;
         console.log("data is", data)
-        /*var cons = [
-            Math.round(data.averageConsumption),
-            Math.round(data.consumption)
-        ];*/
 
+        ///Main chart must be divided into 2 different charts 
+        ///"cons_bar" and "avg_bar" in order to get a good effect 
+        ///of the "roundedRect" function
         var cons_d = attrs.data.consumption;
         var avg_d = attrs.data.averageConsumption;
-        var colorin = d3.scale.ordinal().range(["#AECCEC", "#3278C2", "#161686"]);
-        var avgcolorin = d3.scale.ordinal().range(["#F6CF9F", "#ED933D", "#FE733A"]);
-
-console.log("avg_d", avg_d)
-        //Make list of arrays
+        console.log("cons_d",cons_d)
+        ///How to make list of arrays
         /*var a = {"apples": 3, "oranges": 4, "bananas": 42};    
         var array_keys = new Array();
         var array_values = new Array();
@@ -159,77 +155,173 @@ console.log("avg_d", avg_d)
         alert(array_keys);
         alert(array_values);*/
 
-        var tariffs = new Array();
-        var cons_real = new Array();
-        var avg_real = new Array();
-
+        ///Arrays of different data for bar charts
+        var tariffs = new Array(); //legend data
+        var cons = ["consumption"]; //cons_bar data
+        var avg = ["averageConsumption"]; // avg_bar data
         for (var key in cons_d) {
           tariffs.push(key);
-          cons_real.push(cons_d[key]);
+          cons.push(cons_d[key]);
         };
-
         for (var key in avg_d) {
-          avg_real.push(avg_d[key]);
+          avg.push(avg_d[key]);
         };
 
-console.log("cons is", cons_real)
-console.log("avgcons is", avg_real)
- 
-        cons_real.sort(function(a,b) {return a-b;});
-        avg_real.sort(function(a,b) {return a-b;});
+        ///Array for legend position depending on 
+        ///number of tariffs
+        var l_legend = []; //number of legends
+        for (key in cons) {
+            l_legend.push(40);
+        };
+        l_legend.shift(); //deletes the first value in an array
+        //console.log("legends", l_legend) //e.g. [50,50,50]
+        var l_position = []; //legend positions
+        l_legend.reduce(function(a,b,i) { return l_position[i] = a+b; },0);
 
-        var cons = [];
-        var avg = [];
-        cons_real.reduce(function(a,b,i) { return cons[i] = a+b; },0);
-        avg_real.reduce(function(a,b,i) { return avg[i] = a+b; },0);
-
+        ///Sorted values according to preference of 
+        ///data visualization.
+        //Caution! to perform this method, keys should 
+        ///be ordered from more consumption (i.e. "pN") to
+        ///less (i.e. "p0")
+        tariffs.sort(function(a,b) {return b-a;});
         cons.sort(function(a,b) {return b-a;});
         avg.sort(function(a,b) {return b-a;});
-        tariffs.sort(function(a,b) {return b-a;}); //Caution! to perform this method, keys should be ordered from more consumption (i.e. "pN") to less (i.e. "p0")
-        cons_real.sort(function(a,b) {return b-a;});
-        avg_real.sort(function(a,b) {return b-a;});
+        l_position.sort(function(a,b) {return b-a;});
+        //console.log("tariffs", tariffs) //e.g. ["three","two","one"]
+        //console.log("user consumption", cons) //e.g. [180,100,20]
+        //console.log("average consumption", avg) //e.g. [180,100,20]
+        //console.log("legend positions", l_position) //e.g. [150,100,50]
 
-console.log("cons is", cons)
-console.log("avgcons is", avg)
-console.log("tariffs", tariffs)
-        
-        /*cons.forEach(
-            function (d) {
-                var y0 = 0;
-                //d.tariffs = color.domain().map(function(name) { return {name: name, y0: y0, y1: y0 += +d[name]}; });
-            }
-        );*/
+        ///Definition of chart environment
 
+        ///Internal sizes
+        var width =  400,
+        height = 300,
+        barWidth = width/2,
+        labelSize = 24,
+        barHeight = height - labelSize-40,
+        rectWidth = barWidth * 0.375,
+        barEnerWidth = barWidth * 0.5;
 
-        /*
-        Some calculated metadata for CT105
-        */
+        ///Responsive environment
+        var main = d3.select(attrs.container)
+                   .append('div')
+                   .classed("svg-container-ct105", true) //container class to make it responsive
+                   .append("svg")
+                   //responsive SVG needs these 2 attributes and no width and height attr
+                   .attr("preserveAspectRatio", "xMinYMin meet")
+                   .attr("viewBox", "0 0 600 400")
+                   //class to make it responsive
+                   .classed("svg-content-responsive", true); 
 
-        /*ct105.getEfficientCustomersPercent = function() {
-            return parseFloat(((
-                data.numberCustomersEff / (
-                    data.numberCustomersEff + data.numberCustomers
-                )
-            ) * 100).toFixed(2));
-        };
+        ///Definition of ranges
+        var ycons = d3.scale.linear().range([0, barHeight]);
+        var yavg = d3.scale.linear().range([0, barHeight]); 
+        //var z = d3.scale.ordinal().range(["darkblue", "blue", "lightblue"])
+        var cons_color = d3.scale.ordinal().range(["#AECCEC", "#3278C2", "#161686"]);
+        var avg_color = d3.scale.ordinal().range(["#F6CF9F", "#ED933D", "#FE733A"]);
 
-        ct105.getRanking = function() {
-            if (data.consumption < data.averageEffConsumption) {
-                return 'GREAT';
-            }
-            else if (data.consumption < data.averageConsumption) {
-                return 'GOOD';
-            }
-            else {
-                return 'BAD';
-            }
+        ///Data model as matrix for each chart:
+        ///1 row & CHART_ID+TARIFF_N columns like CHART_ID,TARIFF_1,...,TARIFF_N
+        var cons_matrix = [cons];
+        var avg_matrix = [avg];
 
-        };*/
+        ///Distribution of data for each chart
+        var cons_remapped =tariffs.map(function(dat,i){
+            return cons_matrix.map(function(d,ii){
+                return {x: ii, y: d[i+1] };
+            })
+        });
+        var avg_remapped =tariffs.map(function(dat,i){ 
+            return avg_matrix.map(function(d,ii){
+                return {x: ii, y: d[i+1] };
+            })
+        });
 
-        /*
-        Definition of labels
-        */
-        tariffs = attrs.tariffs || { //order according to sort function from more to less
+        ///Call to stacked method with x, y0, y1 predefined
+        var cons_stacked = d3.layout.stack()(cons_remapped);
+        var avg_stacked = d3.layout.stack()(avg_remapped);
+
+        ///Definition of domains
+        ycons.domain([0, d3.max(cons_stacked[cons_stacked.length - 1], 
+            function(d) { return d.y0 + d.y; })]);
+        yavg.domain([0, d3.max(avg_stacked[avg_stacked.length - 1], 
+            function(d) { return d.y0 + d.y; })]);
+
+        ///MAIN CHART DEFINITION
+        ///Right chart 
+        var cons_bar = main.selectAll("div")
+        .data(cons_stacked)
+        .enter().append("g")
+        .style("fill", function(d, i) { return cons_color(i); })
+        .attr("transform", "translate("+(width*2-25-barEnerWidth-rectWidth+5)+",20) rotate(180)");
+        //.style("stroke", function(d, i) { return d3.rgb(z(i)).darker(); });
+
+        ///Left chart
+        var avg_bar = main.selectAll("div")
+        .data(avg_stacked)
+        .enter().append("g")
+        .style("fill", function(d, i) { return avg_color(i); })
+        .attr("transform", "translate("+(barEnerWidth+rectWidth*2+5)+",20) rotate(180)");
+        //.style("stroke", function(d, i) { return d3.rgb(z(i)).darker(); });
+
+        ///Legend chart
+        var cons_legend = main.selectAll('div')
+            .data(l_position)
+            .enter().append('g')
+            .style("fill", function(d, i) { return cons_color(i); })
+            .attr('transform', 'translate(' + (barWidth+5) + ','+
+                (l_position.length<4 ? barHeight-30 : barHeight+5)+')');
+
+        var avg_legend = main.selectAll('div')
+            .data(l_position)
+            .enter().append('g')
+            .style("fill", function(d, i) { return avg_color(i); })
+            .attr('transform', 'translate(' + (barWidth+5) + ','+
+                (l_position.length<4 ? barHeight-30 : barHeight+5)+')');
+
+        ///DRAWING STACKED BAR WITH ROUNDED EFFECT
+        ///Right chart 
+        cons_bar.selectAll("path")
+            .data(function(d){console.log("d", d);return d;})
+            .enter().append("path")          
+            .attr("d", function(d) { 
+                console.log("dd", d);
+                return roundedRect(
+                    rectWidth,-ycons(d.y)-ycons(d.y0), barEnerWidth, ycons(d.y)+barEnerWidth/5, barEnerWidth/5, 
+                    false, false, true, true);
+                    //true, true, false, false);
+                });
+
+        ///Left chart
+        avg_bar.selectAll("path")
+            .data(function(d){return d;})
+            .enter().append("path")          
+            .attr("d", function(d) { 
+                return roundedRect(
+                    rectWidth,-yavg(d.y)-yavg(d.y0), barEnerWidth, yavg(d.y)+barEnerWidth/5, barEnerWidth/5, 
+                    false, false, true, true);
+                    //true, true, false, false);
+                });
+
+        ///Legend chart
+        cons_legend.append('path')
+                .attr('d', function(d,i) {
+                    return roundedRect(
+                        100, -l_position[i], 50, 25, 14, 
+                        false, true, false, true);
+                });
+
+        avg_legend.append('path')
+                .attr('d', function(d,i) {
+                    return roundedRect(
+                        50, -l_position[i], 50, 25, 14,
+                        true, false, true, false);
+                });
+
+        ///DEFINITION OF LABELS
+        ///Sorted from more to less
+        tariffs = attrs.tariffs || {
             0: 'More consumption++',
             1: 'More consumption+',
             2: 'More consumption',
@@ -237,12 +329,10 @@ console.log("tariffs", tariffs)
             4: 'Less consumption-',
             5: 'Less consumption--'
         };
-console.log("tariffs", tariffs)
-
-        var styles = {
+        /*var styles = {
           0: 'averageConsumption',
           1: 'consumption'
-        };
+        };*/
         var labels = attrs.labels || {
             0: 'Your neighbors',
             1: 'You'
@@ -252,282 +342,113 @@ console.log("tariffs", tariffs)
             1: '\uf007'
         };
 
-        /*
-        Definition of chart environment
-        */
+        //TEXT INSIDE BAR
+        ///Right chart
+        cons_bar.selectAll("text")
+            .data(function(d){return d;})
+            .enter().append("text")
+            .attr('x', -barEnerWidth-25)
+            .attr('y', function(d) {return  22+(ycons(d.y0))-25;})
+            .attr("transform","translate(0,0) rotate(180)")
+            .attr('class', 'label_ct105_bar')
+            .attr('style', 'fill: white')
+            .attr("text-anchor", "middle")
+            .text(function(d,i) {return Math.round(d.y) + ' kWh';});
 
- 
+        ///Left chart
+        avg_bar.selectAll("text")
+            .data(function(d){return d;})
+            .enter().append("text")
+            .attr('x', -barEnerWidth-25)
+            .attr('y', function(d) {return  22+(yavg(d.y0))-25;})
+            .attr("transform","translate(0,0) rotate(180)")
+            .attr('class', 'label_ct105_bar')
+            .attr('style', 'fill: white')
+            .attr("text-anchor", "middle")
+            .text(function(d,i) {return Math.round(d.y) + ' kWh';});
 
+        ///Legend chart
+        avg_legend.append('text')
+            .attr('x', 100)//barWidth-width/8-(width/8)/2 )
+            .attr('y', function(d,i) { return -l_position[i]+16; })
+            .attr('class', 'label_ct105_legend')
+            .attr('style', 'fill: white')
+            .attr("text-anchor", "middle")
+            .text(function(d,i) { return tariffs[i]; });
 
-        var width =  400,// other type of make it responsive but without autoresizing: var width = parseInt(d3.select('#per').style('width'), 10),
-        height = 300,
-        barWidth = width/2,
-
-        labelSize = 24,
-        barHeight = height - labelSize - 20,
-        rectWidth = barWidth * 0.375,
-        barEnerWidth = barWidth * 0.5;
-
-        var main = d3.select(attrs.container)
-                   .append('div')
-                   .classed("svg-container-ct105", true) //container class to make it responsive
-                   .append("svg")
-                   //responsive SVG needs these 2 attributes and no width and height attr
-                   .attr("preserveAspectRatio", "xMinYMin meet")
-                   .attr("viewBox", "0 0 600 400")
-                   //class to make it responsive
-                   .classed("svg-content-responsive", true);    
-
-        /*var y = d3.scale.linear()
-                .range([barHeight, 0])
-                .domain([0, d3.max(cons)]);*/
-
-        var ycons = d3.scale.linear()
-                .range([barHeight, 0])
-                .domain([0, d3.max(cons)]);
-                //.domain([0, d3.max(cons,function(d,i) { return cons[i+1]-cons[i]; })]);
-
-        var xcons = d3.scale.linear()
-                .range([0, barWidth+25])
-                .domain([0, d3.max(cons)]);
-        
-        var yavg = d3.scale.linear()
-                .range([barHeight, 0])
-                .domain([0, d3.max(avg)]);
-
-        var xavg = d3.scale.linear()
-                .range([0, barWidth+25])
-                .domain([0, d3.max(avg)]);
-
-        /*
-        Definition of chart details
-        */
-
-        //MAIN CHART DEFINITION
-        var bar_cons = main.selectAll('div')
-            .data(cons)
-            .enter().append('g')
-            .style("fill", function(d, i) { return colorin(i); })
-            .style('text-anchor', 'end')
-            .attr('transform', 'translate(' + (width-width/8) + ',0)')
-            //.attr('class', function(d, i) {return 'ot101 ' + styles[i]; })
-            //.attr('transform', function(d, i) {return 'translate(100,0)'; //+ i * barWidth + ', 0)';
-//          })
-        ;
-
-        var legend_cons = main.selectAll('div')
-            .data(cons)
-            .enter().append('g')
-
-            .style("fill", function(d, i) { return colorin(i); })
-          
-
-            .attr('transform', 'translate(' + (width/2) + ',250)')
-            .style('font-size', '41%')
-
-            //.attr('class', function(d, i) {return 'ot101 ' + styles[i]; })
-            //.attr('transform', function(d, i) {return 'translate(100,0)'; //+ i * barWidth + ', 0)';
-//          })
-        ;
-
-
-
-
-        var bar_avg = main.selectAll('div')
-            .data(avg)
-            .enter().append('g')
-            .style("fill", function(d, i) { return avgcolorin(i); })
-            .attr('transform', 'translate(0,0)')
-            //.attr('class', function(d, i) {return 'ot101 ' + styles[i]; })
-            //.attr('transform', function(d, i) {return 'translate('+ 200 + ',100)'; //+ i * barWidth + ', 0)';
-          //})
-        ;
-
-        var legend_avg = main.selectAll('div')
-            .data(avg)
-            .enter().append('g')
-            .style("fill", function(d, i) { return avgcolorin(i); })
-            //.style('text-anchor', 'end')
-            .attr('transform', 'translate(' + (width/2) + ',250)')
-            .style('font-size', '41%')
-            //.attr('class', function(d, i) {return 'ot101 ' + styles[i]; })
-            //.attr('transform', function(d, i) {return 'translate(100,0)'; //+ i * barWidth + ', 0)';
-//          })
-        ;
-
-
-
-
-        //ICONS
-        bar_cons.append('text')
-            .attr('class', 'icons')
-            .attr('style', 'font: ' + parseInt(width / 8) + 'px FontAwesome;' +
-                            'text-anchor: end')
-            .attr('x', width-3*width/8)
-            .attr('y', barHeight)
-            .text(icons[1]);
-
-        bar_avg.append('text')
+        ///ICONS
+        ///Right chart
+        cons_bar.append('text')
             .attr('class', 'icons')
             .attr('style', 'font: ' + parseInt(width / 8) + 'px FontAwesome;' +
                             'text-anchor: start')
-            .attr('x', 0)
-            .attr('y', barHeight)
+            //.attr('x', width-3*width/8)
+            //.attr('y', 50)//barHeight)
+            .attr("transform", "translate("+(45)+","+-barHeight+") rotate(180)")
+            .text(icons[1]);
+
+        ///Left chart
+        avg_bar.append('text')
+            .attr('class', 'icons')
+            .attr('style', 'font: ' + parseInt(width / 8) + 'px FontAwesome;' +
+                            'text-anchor: end')
+            //.attr('x', width-3*width/8)
+            //.attr('y', 50)//barHeight)
+            .attr("transform", "translate("+(barWidth)+","+-barHeight+") rotate(180)")
             .text(icons[0]);
 
-        //LINE BETWEEEN CHART AND ICON
-         bar_cons.append("rect")
-                .attr("class", "line")
-                .attr("x", rectWidth+barEnerWidth-100) 
-                .attr("y", barHeight)
-                .attr("width", rectWidth+barEnerWidth-10)
-                .attr("height", 2)
-                .style("stroke-width", "1px");
+        ///LINE BETWEEEN CHART AND ICON
+        ///Right chart
+        cons_bar.append("rect")
+            .attr("class", "line")
+            //.attr("x", rectWidth+barEnerWidth-100) 
+            //.attr("y", barHeight)
+            .attr("width", rectWidth+barEnerWidth-10)
+            .attr("height", 2)
+            .attr("transform", "translate("+(barWidth-15-10)+","+-barHeight+") rotate(180)")
+            .style("stroke-width", "1px");
+        
+        ///Left chart
+        avg_bar.append("rect")
+            .attr("class", "line")
+            //.attr("x", 10) 
+            //.attr("y", barHeight)
+            .attr("width", rectWidth+barEnerWidth-10)
+            .attr("height", 2)
+            .attr("transform", "translate("+(barWidth+50-10)+","+-barHeight+") rotate(180)")
+            .style("stroke-width", "1px");
 
-         bar_avg.append("rect")
-                .attr("class", "line")
-                .attr("x", 10) 
-                .attr("y", barHeight)
-                .attr("width", rectWidth+barEnerWidth-10)
-                .attr("height", 2)
-                .style("stroke-width", "1px");
-        //STACKED BAR WITH ROUNDED EFFECT
-        bar_cons.append('path')
-        //bar.append('path')
-                .attr('d', function(d) {
-                    return roundedRect(
-                        rectWidth, ycons(d), barEnerWidth, barHeight - ycons(d), barEnerWidth/5, //The string "barEnerWidth/4" is referred to the radio of the rounded border 
-                        //rectWidth, ycons(d), barEnerWidth, - ycons(d), barEnerWidth/5, //The string "barEnerWidth/4" is referred to the radio of the rounded border 
-                        true, true, false, false);
-                });
-
-        bar_avg.append('path')
-        //bar.append('path')
-                .attr('d', function(d) {
-                    return roundedRect(
-                        rectWidth, yavg(d), barEnerWidth, barHeight - yavg(d), barEnerWidth/5, //The string "barEnerWidth/4" is referred to the radio of the rounded border 
-                        true, true, false, false);
-                });
-
-
-
-        //LEGEND WITH ROUNDED EFFECT
-        legend_cons.append('path')
-                .attr('d', function(d) {
-                    //return roundedRect(rectWidth, ycons(d), barEnerWidth, barHeight - ycons(d), barEnerWidth/5, true, true, false, false);
-                    //return roundedRect(100, 100, 100, 50, 20, false, true, false, true);
-                    //return roundedRect(100, xcons(d), 100, xcons(d)-50, 20, false, true, false, true);
-                    //return roundedRect(100, 100, xcons(d), 50, 20, false, true, false, true);
-                    return roundedRect(100, -xcons(d), 50, 25, 14, false, true, false, true);
-                });
-
-        legend_avg.append('path')
-                .attr('d', function(d) {
-                    //return roundedRect(rectWidth, ycons(d), barEnerWidth, barHeight - ycons(d), barEnerWidth/5, true, true, false, false);
-                    //return roundedRect(0, 100, 100, 50, 20, true, false, true, false);
-                    return roundedRect(50, -xavg(d), 50, 25, 14, true, false, true, false);
-
-                });
-
-
-        //var width =  400,
-        //height = 300,
-        //barWidth = width/2,
-
-        //labelSize = 24,
-        //barHeight = height - labelSize - 20,
-        //rectWidth = barWidth * 0.375,
-        //barEnerWidth = barWidth * 0.5;
-
-    //x: x-coordinate
-    // y: y-coordinate
-    //w: width
-    //h: height
-    //r: corner radius
-    //tl: top_left rounded?
-    //tr: top_right rounded?
-    //bl: bottom_left rounded?
-    //br: bottom_right rounded?
-    //function roundedRect(x, y, w, h, r, tl, tr, bl, br) 
-
-
-
-        /*bar_cons.append("rect")
-                .attr("class", "line")
-                .attr("x", rectWidth+barEnerWidth-100) 
-                .attr("y", height/2)
-                .attr("width", rectWidth+barEnerWidth-10)
-                .attr("height", 2)
-                .style("stroke-width", "1px");
-         bar_avg.append("rect")
-                .attr("class", "line")
-                .attr("x", 10) 
-                .attr("y", height/2)
-                .attr("width", rectWidth+barEnerWidth-10)
-                .attr("height", 2)
-                .style("stroke-width", "1px");*/
-
-        //TEXT INSIDE BAR
-        bar_cons.append('text')
-                .attr('x', barWidth-width/8-(width/8)/2 )
-                .attr('y', function(d) { return ycons(d) + 15*2.5; })
-                //.attr('dy', '.' + width * 0.125 + 'em')
-                //.attr('style', 'font-size:' +1+'px')
-                .attr('class', 'label')
-                //.attr('style', 'font-size: 1px')
-                .attr('style', 'fill: white')
-                .attr("text-anchor", "middle")
-                .text(function(d,i) { return Math.round(cons_real[i]) + ' kWh'; });
-
-        bar_avg.append('text')
-                .attr('x', barWidth-width/8-(width/8)/2)
-                .attr('y', function(d) { return yavg(d) + 15*2.5; })
-                //.attr('dy', '.' + width * 0.125 + 'em')
-                .attr('class', 'label')
-                //.attr('style', 'font-size: ' + width * 0.0 + 'px')
-                .attr('style', 'fill: white')
-                .attr("text-anchor", "middle")
-                .text(function(d,i) { return Math.round(avg_real[i]) + ' kWh'; });
-
-
-                //TEXT INSIDE LEGEND
-        /*legend_cons.append('text')
-                .attr('x', width/2)
-                .attr('y', function(d) { return ycons(d) + 15*2.5; })
-                //.attr('dy', '.' + width * 0.125 + 'em')
-                //.attr('style', 'font-size:' +1+'px')
-                .attr('class', 'label')
-                //.attr('style', 'font-size: 1px')
-                .attr('style', 'fill: black')
-                .attr("text-anchor", "middle")
-                .text(function(d,i) { return d + ' kWh'; });*/
-
-        legend_avg.append('text')
-        //.attr('class', 'bartext')
-                .attr('x', 100)//barWidth-width/8-(width/8)/2 )
-                .attr('y', function(d) { return -xavg(d)+16; })
-                //.attr('dy', '.' + width * 0.125 + 'em')
-                .attr('style', 'fill: white')
-                .attr("text-anchor", "middle")
-                .text(function(d,i) { return tariffs[i]; });
-
-        //LABEL TEXTS
-        bar_cons.append('text')
+        ///LABEL TEXTS
+        ///Right chart
+        cons_bar.append('text')
         .attr("text-anchor", "middle")
-            .attr('x', barWidth/2)
-            .attr('y', height -10)
+            //.attr('x', barWidth/2)
+            //.attr('y', height -10)
             .attr('class', 'label')
             .attr('style', 'font-size: ' + labelSize + 'px')
+            .attr("transform", "translate("+(barWidth-50)+","+(-barHeight-40)+") rotate(180)")
             .text(labels[1]);
 
-        bar_avg.append('text')
+        ///Left chart
+        avg_bar.append('text')
         .attr("text-anchor", "middle")
-            .attr('x', barWidth/2)
-            .attr('y', height -10)
+            //.attr('x', barWidth/2)
+            //.attr('y', height -10)
             .attr('class', 'label')
             .attr('style', 'font-size: ' + labelSize + 'px')
+            .attr("transform", "translate("+(barWidth-50)+","+(-barHeight-40)+") rotate(180)")
             .text(labels[0]);
 
+
+
+
+        
+
+
+
+
+
+ 
         return ct105;
 
     };
