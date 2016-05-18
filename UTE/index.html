@@ -129,50 +129,318 @@
 <!--HTML: CT202 service-->
 <h1>&nbsp;¿Y los últimos 12 meses?</h1>
 <div class="chart-ct202" id="chartct202a"></div>
-<div class="chart-ct202" id="chartct202b_cons"></div>
-<div class="chart-ct202" id="chartct202b_avg"></div>
+<div class="col-xs-6">
+<div class="chart-ct206" id="chartct202b_cons"></div>
+</div>
+<div class="col-xs-6">
+<div class="chart-ct206" id="chartct202b_avg"></div>
+</div>
 <!--JS: CT202 service-->
 <script>
-    var result_ct202 = {"contractId": "000db922b1fc22", "dailyStats": [{"price": 0.10244, "day": 20150901.0, "consumption": 1.556, "timeSlot": "grün"}, {"price": 0.045102, "day": 20150901.0, "consumption": 0.523, "timeSlot": "gelb"}, {"price": 0.10713, "day": 20150901.0, "consumption": 0.996, "timeSlot": "rot"}, {"price": 0.25467, "day": 20150901.0, "consumption": 3.075, "timeSlot": "total"}, {"price": 0.097148, "day": 20150902.0, "consumption": 1.45, "timeSlot": "grün"}, {"price": 0.026473, "day": 20150902.0, "consumption": 0.212, "timeSlot": "gelb"}, {"price": 0.16554, "day": 20150902.0, "consumption": 1.727, "timeSlot": "rot"}, {"price": 0.28916, "day": 20150902.0, "consumption": 3.389, "timeSlot": "total"}, {"price": 0.11631, "day": 20150903.0, "consumption": 1.834, "timeSlot": "grün"}, {"price": 0.022699, "day": 20150903.0, "consumption": 0.149, "timeSlot": "gelb"}, {"price": 0.15635, "day": 20150903.0, "consumption": 1.612, "timeSlot": "rot"}, {"price": 0.29536, "day": 20150903.0, "consumption": 3.595, "timeSlot": "total"}, {"price": 0.13228, "day": 20150904.0, "consumption": 2.154, "timeSlot": "grün"}, {"price": 0.020423, "day": 20150904.0, "consumption": 0.111, "timeSlot": "gelb"}, {"price": 0.17488, "day": 20150904.0, "consumption": 1.844, "timeSlot": "rot"}, {"price": 0.32758, "day": 20150904.0, "consumption": 4.109, "timeSlot": "total"}, {"price": 0.11531, "day": 20150905.0, "consumption": 1.814, "timeSlot": "grün"}, {"price": 0.016769, "day": 20150905.0, "consumption": 0.05, "timeSlot": "gelb"}, {"price": 0.20956, "day": 20150905.0, "consumption": 2.278, "timeSlot": "rot"}, {"price": 0.34164, "day": 20150905.0, "consumption": 4.142, "timeSlot": "total"}, {"price": 0.12744, "day": 20150906.0, "consumption": 2.057, "timeSlot": "grün"}, {"price": 0.16334, "day": 20150906.0, "consumption": 2.037, "timeSlot": "gelb"}, {"price": 0.29078, "day": 20150906.0, "consumption": 4.094, "timeSlot": "total"}, {"price": 0.12669, "day": 20150907.0, "consumption": 2.042, "timeSlot": "grün"}, {"price": 0.30159, "day": 20150907.0, "consumption": 4.345, "timeSlot": "gelb"}, {"price": 0.42828, "day": 20150907.0, "consumption": 6.387, "timeSlot": "total"}, {"price": 0.11985, "day": 20150908.0, "consumption": 1.905, "timeSlot": "grün"}, {"price": 0.018027, "day": 20150908.0, "consumption": 0.071, "timeSlot": "gelb"}, {"price": 0.14005, "day": 20150908.0, "consumption": 1.408, "timeSlot": "rot"}, {"price": 0.27793, "day": 20150908.0, "consumption": 3.384, "timeSlot": "total"}, {"price": 0.11032, "day": 20150909.0, "consumption": 1.714, "timeSlot": "grün"}, {"price": 0.046, "day": 20150909.0, "consumption": 0.538, "timeSlot": "gelb"}, {"price": 0.149, "day": 20150909.0, "consumption": 1.52, "timeSlot": "rot"}, {"price": 0.30532, "day": 20150909.0, "consumption": 3.772, "timeSlot": "total"}, {"price": 0.10354, "day": 20150910.0, "consumption": 1.578, "timeSlot": "grün"}, {"price": 0.031564, "day": 20150910.0, "consumption": 0.297, "timeSlot": "gelb"}, {"price": 0.1001, "day": 20150910.0, "consumption": 0.908, "timeSlot": "rot"}, {"price": 0.2352, "day": 20150910.0, "consumption": 2.783, "timeSlot": "total"}, {"price": 0.099643, "day": 20150911.0, "consumption": 1.5, "timeSlot": "grün"}, {"price": 0.020842, "day": 20150911.0, "consumption": 0.118, "timeSlot": "gelb"}, {"price": 0.09778, "day": 20150911.0, "consumption": 0.879, "timeSlot": "rot"}, {"price": 0.21827, "day": 20150911.0, "consumption": 2.497, "timeSlot": "total"}, {"price": 0.18762, "day": 20150912.0, "consumption": 3.263, "timeSlot": "grün"}, {"price": 0.02222, "day": 20150912.0, "consumption": 0.141, "timeSlot": "gelb"}, {"price": 0.22906, "day": 20150912.0, "consumption": 2.522, "timeSlot": "rot"}, {"price": 0.43889, "day": 20150912.0, "consumption": 5.926, "timeSlot": "total"}, {"price": 0.12794, "day": 20150913.0, "consumption": 2.067, "timeSlot": "grün"}, {"price": 0.37407, "day": 20150913.0, "consumption": 5.555, "timeSlot": "gelb"}, {"price": 0.502, "day": 20150913.0, "consumption": 7.622, "timeSlot": "total"}, {"price": 0.11357, "day": 20150914.0, "consumption": 1.779, "timeSlot": "grün"}, {"price": 0.20191, "day": 20150914.0, "consumption": 2.681, "timeSlot": "gelb"}, {"price": 0.31548, "day": 20150914.0, "consumption": 4.46, "timeSlot": "total"}, {"price": 0.10239, "day": 20150915.0, "consumption": 1.555, "timeSlot": "grün"}, {"price": 0.054386, "day": 20150915.0, "consumption": 0.678, "timeSlot": "gelb"}, {"price": 0.26661, "day": 20150915.0, "consumption": 2.992, "timeSlot": "rot"}, {"price": 0.42338, "day": 20150915.0, "consumption": 5.225, "timeSlot": "total"}, {"price": 0.10344, "day": 20150916.0, "consumption": 1.576, "timeSlot": "grün"}, {"price": 0.026413, "day": 20150916.0, "consumption": 0.211, "timeSlot": "gelb"}, {"price": 0.089391, "day": 20150916.0, "consumption": 0.774, "timeSlot": "rot"}, {"price": 0.21924, "day": 20150916.0, "consumption": 2.561, "timeSlot": "total"}, {"price": 0.10344, "day": 20150917.0, "consumption": 1.576, "timeSlot": "grün"}, {"price": 0.042886, "day": 20150917.0, "consumption": 0.486, "timeSlot": "gelb"}, {"price": 0.13693, "day": 20150917.0, "consumption": 1.369, "timeSlot": "rot"}, {"price": 0.28325, "day": 20150917.0, "consumption": 3.431, "timeSlot": "total"}, {"price": 0.11741, "day": 20150918.0, "consumption": 1.856, "timeSlot": "grün"}, {"price": 0.017907, "day": 20150918.0, "consumption": 0.069, "timeSlot": "gelb"}, {"price": 0.19294, "day": 20150918.0, "consumption": 2.07, "timeSlot": "rot"}, {"price": 0.32826, "day": 20150918.0, "consumption": 3.995, "timeSlot": "total"}, {"price": 0.18353, "day": 20150919.0, "consumption": 3.181, "timeSlot": "grün"}, {"price": 0.086493, "day": 20150919.0, "consumption": 1.214, "timeSlot": "gelb"}, {"price": 0.18639, "day": 20150919.0, "consumption": 1.988, "timeSlot": "rot"}, {"price": 0.45641, "day": 20150919.0, "consumption": 6.383, "timeSlot": "total"}, {"price": 0.15518, "day": 20150920.0, "consumption": 2.613, "timeSlot": "grün"}, {"price": 0.44026, "day": 20150920.0, "consumption": 6.66, "timeSlot": "gelb"}, {"price": 0.59544, "day": 20150920.0, "consumption": 9.273, "timeSlot": "total"}, {"price": 0.15154, "day": 20150921.0, "consumption": 2.54, "timeSlot": "grün"}, {"price": 0.31297, "day": 20150921.0, "consumption": 4.535, "timeSlot": "gelb"}, {"price": 0.46451, "day": 20150921.0, "consumption": 7.075, "timeSlot": "total"}, {"price": 0.11651, "day": 20150922.0, "consumption": 1.838, "timeSlot": "grün"}, {"price": 0.023418, "day": 20150922.0, "consumption": 0.161, "timeSlot": "gelb"}, {"price": 0.19774, "day": 20150922.0, "consumption": 2.13, "timeSlot": "rot"}, {"price": 0.33766, "day": 20150922.0, "consumption": 4.129, "timeSlot": "total"}, {"price": 0.10942, "day": 20150923.0, "consumption": 1.696, "timeSlot": "grün"}, {"price": 0.032104, "day": 20150923.0, "consumption": 0.306, "timeSlot": "gelb"}, {"price": 0.17001, "day": 20150923.0, "consumption": 1.783, "timeSlot": "rot"}, {"price": 0.31154, "day": 20150923.0, "consumption": 3.785, "timeSlot": "total"}, {"price": 0.12454, "day": 20150924.0, "consumption": 1.999, "timeSlot": "grün"}, {"price": 0.017728, "day": 20150924.0, "consumption": 0.066, "timeSlot": "gelb"}, {"price": 0.18983, "day": 20150924.0, "consumption": 2.031, "timeSlot": "rot"}, {"price": 0.3321, "day": 20150924.0, "consumption": 4.096, "timeSlot": "total"}, {"price": 0.12255, "day": 20150925.0, "consumption": 1.959, "timeSlot": "grün"}, {"price": 0.023957, "day": 20150925.0, "consumption": 0.17, "timeSlot": "gelb"}, {"price": 0.13493, "day": 20150925.0, "consumption": 1.344, "timeSlot": "rot"}, {"price": 0.28144, "day": 20150925.0, "consumption": 3.473, "timeSlot": "total"}, {"price": 0.15139, "day": 20150926.0, "consumption": 2.537, "timeSlot": "grün"}, {"price": 0.037495, "day": 20150926.0, "consumption": 0.396, "timeSlot": "gelb"}, {"price": 0.14868, "day": 20150926.0, "consumption": 1.516, "timeSlot": "rot"}, {"price": 0.33756, "day": 20150926.0, "consumption": 4.449, "timeSlot": "total"}, {"price": 0.18472, "day": 20150927.0, "consumption": 3.205, "timeSlot": "grün"}, {"price": 0.38239, "day": 20150927.0, "consumption": 5.694, "timeSlot": "gelb"}, {"price": 0.56712, "day": 20150927.0, "consumption": 8.899, "timeSlot": "total"}, {"price": 0.11766, "day": 20150928.0, "consumption": 1.861, "timeSlot": "grün"}, {"price": 0.20581, "day": 20150928.0, "consumption": 2.746, "timeSlot": "gelb"}, {"price": 0.32347, "day": 20150928.0, "consumption": 4.607, "timeSlot": "total"}, {"price": 0.12205, "day": 20150929.0, "consumption": 1.949, "timeSlot": "grün"}, {"price": 0.033302, "day": 20150929.0, "consumption": 0.326, "timeSlot": "gelb"}, {"price": 0.18455, "day": 20150929.0, "consumption": 1.965, "timeSlot": "rot"}, {"price": 0.3399, "day": 20150929.0, "consumption": 4.24, "timeSlot": "total"}, {"price": 0.11985, "day": 20150930.0, "consumption": 1.905, "timeSlot": "grün"}, {"price": 0.021022, "day": 20150930.0, "consumption": 0.121, "timeSlot": "gelb"}, {"price": 0.18335, "day": 20150930.0, "consumption": 1.95, "timeSlot": "rot"}, {"price": 0.32423, "day": 20150930.0, "consumption": 3.976, "timeSlot": "total"}], "month": 201509.0, "summary": [{"min": 1.45, "max": 3.263, "sum": 60.559, "timeSlot": "grün", "price": 3.7657, "mean": 2.0186}, {"min": 0.05, "max": 6.66, "sum": 40.667, "timeSlot": "gelb", "price": 3.0696, "mean": 1.3556}, {"min": 0.774, "max": 2.992, "sum": 37.606, "timeSlot": "rot", "price": 3.6108, "mean": 1.7094}, {"min": 2.497, "max": 9.273, "sum": 138.83, "timeSlot": "total", "price": 10.446, "mean": 4.6277}], "companyId": 1234509876.0};
+    var result_ct202 = {
+    "contractId": "000db922b1fc22",
+    "dailyStats": [{
+        "price": 0.10244,
+        "day": 201501,
+        "consumption": 1.556,
+        "timeSlot": "grün"
+    }, {
+        "price": 0.045102,
+        "day": 201501,
+        "consumption": 0.523,
+        "timeSlot": "gelb"
+    }, {
+        "price": 0.10713,
+        "day": 201501,
+        "consumption": 0.996,
+        "timeSlot": "rot"
+    }, {
+        "price": 0.25467,
+        "day": 201501,
+        "consumption": 3.075,
+        "timeSlot": "total"
+    }, {
+        "price": 0.097148,
+        "day": 201502,
+        "consumption": 1.45,
+        "timeSlot": "grün"
+    }, {
+        "price": 0.026473,
+        "day": 201502,
+        "consumption": 0.212,
+        "timeSlot": "gelb"
+    }, {
+        "price": 0.16554,
+        "day": 201502,
+        "consumption": 1.727,
+        "timeSlot": "rot"
+    }, {
+        "price": 0.28916,
+        "day": 201502,
+        "consumption": 3.389,
+        "timeSlot": "total"
+    }, {
+        "price": 0.11631,
+        "day": 201503,
+        "consumption": 1.834,
+        "timeSlot": "grün"
+    }, {
+        "price": 0.022699,
+        "day": 201503,
+        "consumption": 0.149,
+        "timeSlot": "gelb"
+    }, {
+        "price": 0.15635,
+        "day": 201503,
+        "consumption": 1.612,
+        "timeSlot": "rot"
+    }, {
+        "price": 0.29536,
+        "day": 201503,
+        "consumption": 3.595,
+        "timeSlot": "total"
+    }, {
+        "price": 0.13228,
+        "day": 201504,
+        "consumption": 2.154,
+        "timeSlot": "grün"
+    }, {
+        "price": 0.020423,
+        "day": 201504,
+        "consumption": 0.111,
+        "timeSlot": "gelb"
+    }, {
+        "price": 0.17488,
+        "day": 201504,
+        "consumption": 1.844,
+        "timeSlot": "rot"
+    }, {
+        "price": 0.32758,
+        "day": 201504,
+        "consumption": 4.109,
+        "timeSlot": "total"
+    }, {
+        "price": 0.11531,
+        "day": 201505,
+        "consumption": 1.814,
+        "timeSlot": "grün"
+    }, {
+        "price": 0.016769,
+        "day": 201505,
+        "consumption": 0.05,
+        "timeSlot": "gelb"
+    }, {
+        "price": 0.20956,
+        "day": 201505,
+        "consumption": 2.278,
+        "timeSlot": "rot"
+    }, {
+        "price": 0.34164,
+        "day": 201505,
+        "consumption": 4.142,
+        "timeSlot": "total"
+    }, {
+        "price": 0.12744,
+        "day": 201506,
+        "consumption": 2.057,
+        "timeSlot": "grün"
+    }, {
+        "price": 0.16334,
+        "day": 201506,
+        "consumption": 2.037,
+        "timeSlot": "gelb"
+    }, {
+        "price": 0.29078,
+        "day": 201506,
+        "consumption": 4.094,
+        "timeSlot": "total"
+    }, {
+        "price": 0.12669,
+        "day": 201507,
+        "consumption": 2.042,
+        "timeSlot": "grün"
+    }, {
+        "price": 0.30159,
+        "day": 201507,
+        "consumption": 4.345,
+        "timeSlot": "gelb"
+    }, {
+        "price": 0.42828,
+        "day": 201507,
+        "consumption": 6.387,
+        "timeSlot": "total"
+    }, {
+        "price": 0.11985,
+        "day": 201508,
+        "consumption": 1.905,
+        "timeSlot": "grün"
+    }, {
+        "price": 0.018027,
+        "day": 201508,
+        "consumption": 0.071,
+        "timeSlot": "gelb"
+    }, {
+        "price": 0.14005,
+        "day": 201508,
+        "consumption": 1.408,
+        "timeSlot": "rot"
+    }, {
+        "price": 0.27793,
+        "day": 201508,
+        "consumption": 3.384,
+        "timeSlot": "total"
+    }, {
+        "price": 0.11032,
+        "day": 201509,
+        "consumption": 1.714,
+        "timeSlot": "grün"
+    }, {
+        "price": 0.046,
+        "day": 201509,
+        "consumption": 0.538,
+        "timeSlot": "gelb"
+    }, {
+        "price": 0.149,
+        "day": 201509,
+        "consumption": 1.52,
+        "timeSlot": "rot"
+    }, {
+        "price": 0.30532,
+        "day": 201509,
+        "consumption": 3.772,
+        "timeSlot": "total"
+    }, {
+        "price": 0.10354,
+        "day": 201510,
+        "consumption": 1.578,
+        "timeSlot": "grün"
+    }, {
+        "price": 0.031564,
+        "day": 201510,
+        "consumption": 0.297,
+        "timeSlot": "gelb"
+    }, {
+        "price": 0.1001,
+        "day": 201510,
+        "consumption": 0.908,
+        "timeSlot": "rot"
+    }, {
+        "price": 0.2352,
+        "day": 201510,
+        "consumption": 2.783,
+        "timeSlot": "total"
+    }, {
+        "price": 0.099643,
+        "day": 201511,
+        "consumption": 1.5,
+        "timeSlot": "grün"
+    }, {
+        "price": 0.020842,
+        "day": 201511,
+        "consumption": 0.118,
+        "timeSlot": "gelb"
+    }, {
+        "price": 0.09778,
+        "day": 201511,
+        "consumption": 0.879,
+        "timeSlot": "rot"
+    }, {
+        "price": 0.21827,
+        "day": 201511,
+        "consumption": 2.497,
+        "timeSlot": "total"
+    }, {
+        "price": 0.18762,
+        "day": 201512,
+        "consumption": 3.263,
+        "timeSlot": "grün"
+    }, {
+        "price": 0.02222,
+        "day": 201512,
+        "consumption": 0.141,
+        "timeSlot": "gelb"
+    }, {
+        "price": 0.22906,
+        "day": 201512,
+        "consumption": 2.522,
+        "timeSlot": "rot"
+    }, {
+        "price": 0.43889,
+        "day": 201512,
+        "consumption": 5.926,
+        "timeSlot": "total"
+    }],
+    "month": 201509,
+    "summary": [{
+        "min": 1.45,
+        "max": 3.263,
+        "sum": 60.559,
+        "timeSlot": "grün",
+        "price": 3.7657,
+        "mean": 2.0186
+    }, {
+        "min": 0.05,
+        "max": 6.66,
+        "sum": 40.667,
+        "timeSlot": "gelb",
+        "price": 3.0696,
+        "mean": 1.3556
+    }, {
+        "min": 0.774,
+        "max": 2.992,
+        "sum": 37.606,
+        "timeSlot": "rot",
+        "price": 3.6108,
+        "mean": 1.7094
+    }, {
+        "min": 2.497,
+        "max": 9.273,
+        "sum": 138.83,
+        "timeSlot": "total",
+        "price": 10.446,
+        "mean": 4.6277
+    }],
+    "companyId": 1234509876.0
+};
     var ct202a = Empowering.Graphics.CT202A({
         container: "#chartct202a", data: JSON.stringify(result_ct202),
-        labels: "consumption",
-        units: "kWh/day",
+        labels: "consumo",
+        units: "kWh/mes",
         types: [
-                    "Llano",
+                    "Punta",
                     "Valle",
-                    "Punta"
+                    "Llano"
                 ]
                 ,
         poplabels: {
-                    0: "Tariff",
-                    1: "Consumption"
+                    0: "Tarifa",
+                    1: "Consumo"
                 }
             });
-    var ct202b_cons = Empowering.Graphics.CT202B({
+    var ct202b_cons = Empowering.Graphics.CT202B_CONS({
         container: "#chartct202b_cons", data: JSON.stringify(result_ct202),
         //width: 150, height: 150, radius: 75, 
         types: {
-                    0: "Llano",
+                    0: "Punta",
                     1: "Valle",
-                    2: "Punta"
+                    2: "Llano"
                 },
         poplabels: {
-                    0: "Percentage",
-                    1: "Consumption"
+                    0: "Porcentaje",
+                    1: "Consumo"
                 }
             });
-    var ct202b_avg = Empowering.Graphics.CT202B({
+    var ct202b_avg = Empowering.Graphics.CT202B_AVG({
         container: "#chartct202b_avg", data: JSON.stringify(result_ct202),
         //width: 150, height: 150, radius: 75, 
         types: {
-                    0: "Llano",
+                    0: "Punta",
                     1: "Valle",
-                    2: "Punta"
+                    2: "Llano"
                 },
         poplabels: {
-                    0: "Percentage",
-                    1: "Consumption"
+                    0: "Porcentaje",
+                    1: "Consumo"
                 }
             });
 </script>
@@ -180,23 +448,41 @@
 
 <!--HTML:CT206 service-->
 <h1>&nbsp;Factor de Utilización (FU)</h1>
-<div class="chart-ct206" id="chartct206"></div>
+<div class="col-xs-6">
+<div class="chart-ct206" id="chartct206_cons"></div>
+</div>
+<div class="col-xs-6">
+<div class="chart-ct206" id="chartct206_avg"></div>
+</div>
 <!--JS: CT206 service-->
 <script>
     var result_ct206 = {"contractId": "000db922b1fc22", "month": 201509.0, "summary": [{"min": 1.45, "max": 3.263, "sum": 60.559, "timeSlot": "grün", "price": 3.7657, "mean": 2.0186}, {"min": 0.05, "max": 6.66, "sum": 40.667, "timeSlot": "gelb", "price": 3.0696, "mean": 1.3556}, {"min": 0.774, "max": 2.992, "sum": 37.606, "timeSlot": "rot", "price": 3.6108, "mean": 1.7094}, {"min": 2.497, "max": 9.273, "sum": 138.83, "timeSlot": "total", "price": 10.446, "mean": 4.6277}], "companyId": 1234509876.0};
-    var ct206 = Empowering.Graphics.CT206({
-        container: "#chartct206", data: JSON.stringify(result_ct206),
-        //width: 150, height: 150, radius: 75, 
-        types: {
-                    0: "Llano",
-                    1: "Valle",
-                    2: "Punta"
-                },
-        poplabels: {
-                    0: "Percentage",
-                    1: "Consumption"
-                }
-            });
+    var ct206_cons = Empowering.Graphics.CT206_CONS({
+    container: "#chartct206_cons", data: JSON.stringify(result_ct206),
+    //width: 150, height: 150, radius: 75, 
+    types: {
+                0: "Punta",
+                1: "Valle",
+                2: "Llano"
+            },
+    poplabels: {
+                0: "Porcentaje",
+                1: "Consumo"
+            }
+        });
+    var ct206_avg = Empowering.Graphics.CT206_AVG({
+    container: "#chartct206_avg", data: JSON.stringify(result_ct206),
+    //width: 150, height: 150, radius: 75, 
+    types: {
+                0: "Punta",
+                1: "Valle",
+                2: "Llano"
+            },
+    poplabels: {
+                0: "Porcentaje",
+                1: "Consumo"
+            }
+        });
 </script>
 
 
@@ -209,17 +495,16 @@
     var ct409 = Empowering.Graphics.CT409({
         container: "#chartct409", data: JSON.stringify(result_ct409),
         locale: "es",
-        poplabels: { 0: "Consumption" }, //width: 1040, height: 400, 
+        poplabels: { 0: "cosY" }, //width: 1040, height: 400, 
         labels: {
-                    0: "Similar homes",
-                    1: "You",
-                    2: "Efficient homes"
+                    0: "Evolución de tus similares",
+                    1: "Tu evolución"
                 }
             });
 </script>
 
 <!--HTML: CT410 service-->
-<h1>&nbsp;Análisis de potencia - ?? kW</h1>
+<h1>&nbsp;Análisis de potencia - 13.2 kW</h1>
 <div class="chart-ct410" id="chartct410"></div>
 <!--JS: CT410 service-->
 
@@ -231,12 +516,12 @@
             //width: 672, height: 336, 
             locale: "es", 
             units: {
-                        0: "kWh/month",
-                        1: "ºC"
+                        0: "kWh",
+                        1: "€"
                     },
             labels: {
-                        0: "Consumption",
-                        1: "Temperature"
+                        0: "Consumo",
+                        1: "Ahorro"
                     }
                 });
 </script>

@@ -476,7 +476,7 @@ var Empowering = {};
         Definition of time formats
         */              
 
-        var parseDate = d3.time.format('%Y%m%d').parse;
+        var parseDate = d3.time.format('%Y%m').parse;
 
         /*
         Data restructuration
@@ -504,7 +504,7 @@ var Empowering = {};
             height = 336  - margin.top  - margin.bottom; //Default: 500-margin.top-margin-bottom
 
         var color = d3.scale.ordinal()
-            .range(["#225C10","#84E464","#c4e464","#64e4c4"]);
+            .range(["#161686","#3278C2","#AECCEC"]);
 
         console.log("color",color)
 
@@ -563,7 +563,7 @@ var Empowering = {};
         );
         color.domain(tariffs);
 
-        var types =  {
+        var types =  attrs.types || {
             0: 'Supervalley',
             1: 'Valley',
             2: 'Peak'
@@ -662,7 +662,7 @@ var Empowering = {};
         var xAxis = d3.svg.axis()
             .scale(x)
             .orient("bottom")
-            .tickFormat(d3.time.format('%_d'))
+            .tickFormat(d3.time.format('%m'))
             .ticks(processed_data.length);
             //.ticks(5);
 
@@ -736,7 +736,7 @@ var Empowering = {};
                 .style("font-size", "66%")
                 //.style("font-weight", "bold")
                 .style("text-anchor", "start")
-                .text(attrs.units || "kWh/day");
+                .text(attrs.units || "kWh/month");
 
           var selection = svg.selectAll(".selection")
               .data(processed_data)
@@ -785,9 +785,9 @@ var Empowering = {};
 
 
 //(d3.select('text').text(function(d){return d.types;})
-    Empowering.Graphics.CT202B = function(attrs) {
+    Empowering.Graphics.CT202B_CONS = function(attrs) {
 
-        var ct202b = {};
+        var ct202b_cons = {};
         if (typeof attrs.data === 'string') {
             attrs.data = JSON.parse(attrs.data);
         }
@@ -824,7 +824,7 @@ var Empowering = {};
             //r = 75,                          //radius, default: 100
             r = Math.min(w, h) / 2,
             color = d3.scale.ordinal()
-            .range(["#225C10","#84E464","#c4e464","#64e4c4"]),
+            .range(["#161686", "#3278C2", "#AECCEC"]),
             percentageFormat = d3.format("%");
 
         /*
@@ -982,59 +982,917 @@ var Empowering = {};
                 });   
 
 
-        return ct202b;
+        return ct202b_cons;
 
         };
 
+    Empowering.Graphics.CT202B_AVG = function(attrs) {
 
-    Empowering.Graphics.OT401 = function(attrs) {
-        var ot401 = {};
-
-        var LOCALES = {
-            ca: 'catalan',
-            es: 'spanish',
-            en: 'english',
-            de: 'german',
-            it: 'italian',
-            fr: 'french'
-        };
-
+        var ct202b_avg = {};
         if (typeof attrs.data === 'string') {
             attrs.data = JSON.parse(attrs.data);
         }
 
-        var width = 1100;//1075;
+        /*
+        Some calculated metadata for OT302B
+        */
 
-        var iconSize = attrs.iconSize || 80;
+        var removeByAttr = function(arr, attr, value){
+          var i = arr.length;
+          while(i--){
+            if( arr[i] 
+              && arr[i].hasOwnProperty(attr) 
+              && (arguments.length > 2 && arr[i][attr] === value ) ){ 
 
-        ot401.plot = d3.select(attrs.container)
-                .append('div')
-                .attr('class', 'ot401');
+              arr.splice(i,1);
 
-        var tip = ot401.plot.selectAll('div')
-            .data(attrs.data)
-            .enter().append('div')
-            .attr('class', 'tip')
-            .classed("svg-container-ot401", true)
-            .attr('style', 'width: ' + width/3 + 'px');
-       
-        tip.append('div')
-            .attr('class', 'icon')
-            .append('i')
-            .attr('class', function(d) { return 'icon-TIP_' +
-                parseInt(d.tipId).toString().charAt(0);})
-            .attr('style', 'font-size: ' + iconSize + 'px');
+            }
+          }
+          return arr;
+        }
 
-        tip.append('div')
-            .attr('class', 'text')
-            .text(function(d) {
-                return d.tipDescription[LOCALES[attrs.locale]];
+        var arr = attrs.data["summary"];
+
+        removeByAttr(arr, "timeSlot", "total");                   
+        //console.log("totaldata is", arr);
+
+        /*
+        Definition of formats and widths
+        */
+
+        var w = 150,                        //width, default: 300
+            h = 150,                            //height, default: 300
+            //r = 75,                          //radius, default: 100
+            r = Math.min(w, h) / 2,
+            color = d3.scale.ordinal()
+            .range(["#FE733A","#ED933D", "#F6CF9F"]),
+            percentageFormat = d3.format("%");
+
+        /*
+        Data restructuration
+        */
+
+        var removal = function (d) {
+          if  (d === "total" || d === "rot")
+            {return d}
+          else remove(d)
+        };
+
+
+        var nested = d3.nest()
+          .key(function(d) {return d.timeSlot;})
+          //.sortKeys(d3.ascending)
+          .rollup(function(leaves) { 
+            return {
+              //"length": leaves.length, 
+              "cons": d3.sum(leaves, function(d) {return parseFloat(d.sum);
+              })
+            } 
+          })
+          .entries(arr);
+          //.entries(data);
+
+        var acum = d3.sum(nested, function(d) { 
+                        return d.values.cons; 
+                    });
+
+        nested.forEach(function(d) {
+                        d.percentage = d.values.cons / acum;
+                    });
+
+        /*
+        Definition of chart environment
+        */
+
+        var vis = d3.select(attrs.container)
+            .append("svg:svg")              //create the SVG element inside the <body>
+            .data([nested])                  //associate our data with the document
+                .attr("width", w)           //set the width and height of our visualization (these will be attributes of the <svg> tag
+                .attr("height", h)
+            .append("svg:g")                //make a group to hold our pie chart
+                .attr("transform", "translate(" + r + "," + r + ")")    //move the center of the pie chart from 0, 0 to radius, radius
+
+        var arc = d3.svg.arc()              //this will create <path> elements for us using arc data
+            .outerRadius(r);
+
+        var pie = d3.layout.pie()
+            .value(function(d) { return d.percentage; });
+
+        var arcs = vis.selectAll("g.slice")     //this selects all <g> elements with class slice (there aren't any yet)
+            .data(pie)                          //associate the generated pie data (an array of arcs, each having startAngle, endAngle and value properties) 
+            .enter()                            //this will create <g> elements for every "extra" data element that should be associated with a selection. The result is creating a <g> for every object in the data array
+                .append("svg:g")                //create a group to hold each slice (we will have a <path> and a <text> element associated with each slice)
+                    .attr("class", "slice")    //allow us to style things in the slices (like text)
+                    .on("mouseover", function (d) { 
+                      //console.log("d is", d);
+                      showPopover.call(this, d.data); })
+                    .on("mouseout",  function (d) { removePopovers(); });
+
+        ///Labels from the origin or from the HTML template (prioritized over origin):
+        ///Each label is refered to a position 0,1,2... without limitation for introducing it
+        var tarname = [];
+        nested.forEach(function(d) {tarname.push(d.key);});
+
+        var types = attrs.types || tarname;
+
+        var poplabels = attrs.poplabels || {
+            0: 'Percentage',
+            1: 'Consumption',
+        };
+
+        function removePopovers () {
+            $('.popover').each(function() {
+              $(this).remove();
+            }); 
+          }
+
+        function showPopover (d) {
+            $(this).popover({
+              //title: d.name,
+              //placement: 'auto top',
+              placement: function(tip, element) { //$this is implicit
+                var position = $(element).position();
+                var minleft = 210;
+                var mintop = 325;
+                if (position.left < minleft && position.top > mintop) {
+                    return "left";
+                }
+                if (position.left > minleft && position.top > mintop) {
+                    return "right";
+                }
+                if (position.top < mintop){
+                    return "top";
+                }
+                return "bottom";
+              },
+              container: 'body',
+              trigger: 'manual',
+              html : true,
+              content: function() { 
+                return poplabels[0]+ ": " + percentageFormat(d.percentage) + 
+                       "<br/>"+ poplabels[1] + ": " + d3.round(d.values.cons, 1) + " kWh"}
             });
+            $(this).popover('show')
+          }
+
+            arcs.append("svg:path")
+                    .attr("fill", function(d, i) { return color(i); } )
+                    .style("stroke", "white") //set the color for each slice to be chosen from the color function defined above
+                    .attr("d", arc);                                    //this creates the actual SVG path using the associated data (pie) with the arc drawing function
+
+            arcs.append("svg:text")                                     //add a label to each slice
+                    .attr("transform", function(d) {                    //set the label's origin to the center of the arc
+                    //we have to make sure to set these before calling arc.centroid
+                    d.innerRadius = 0;
+                    d.outerRadius = r;
+                    var c = arc.centroid(d);
+
+                    //return "translate(" + c[0]*2 +"," + c[1]*2 + ")"; 
+                     return "translate("  + c[0]*1 +"," + c[1]*1 + ")";  
+                     //this gives us a pair of coordinates like [50, 50]
+                })
+                .attr("text-anchor", "middle")
+                .style("fill","white")
+                .style("font-size","58%")
+                .style("font-weight","normal") 
+                .attr("dx", "0em")
+                .attr("dy", "-0.5em")                        //center the text on it's origin
+                .text(function(d,i) { 
+                //return d.data.key; //get the label from our original data array
+                return types[i];
+                });       
+        
+
+            arcs.append("svg:text")                                     //add a label to each slice
+                    .attr("transform", function(d) {                    //set the label's origin to the center of the arc
+                    //we have to make sure to set these before calling arc.centroid
+                    d.innerRadius = 0;
+                    d.outerRadius = r;
+                    var c = arc.centroid(d);
+                    return "translate("  + c[0]*1 +"," + c[1]*1 + ")";        //this gives us a pair of coordinates like [50, 50]
+                })
+                .attr("text-anchor", "middle")
+                .style("fill","white")
+                .style("font-size","66%") 
+                .style("font-weight","bold") 
+                .attr("dx", "0em")
+                .attr("dy", "0.7em")                      //center the text on it's origin
+                .text(function(d) { 
+                //return d.data.key; //get the label from our original data array
+                return percentageFormat(d.data.percentage);
+                });   
+
+
+        return ct202b_avg;
+
+        };
+
+    Empowering.Graphics.CT206_CONS = function(attrs) {
+
+        var ct206_cons = {};
+        if (typeof attrs.data === 'string') {
+            attrs.data = JSON.parse(attrs.data);
+        }
+
+        /*
+        Some calculated metadata for OT302B
+        */
+
+        var removeByAttr = function(arr, attr, value){
+          var i = arr.length;
+          while(i--){
+            if( arr[i] 
+              && arr[i].hasOwnProperty(attr) 
+              && (arguments.length > 2 && arr[i][attr] === value ) ){ 
+
+              arr.splice(i,1);
+
+            }
+          }
+          return arr;
+        }
+
+        var arr = attrs.data["summary"];
+
+        removeByAttr(arr, "timeSlot", "total");                   
+        //console.log("totaldata is", arr);
+
+        /*
+        Definition of formats and widths
+        */
+
+        var w = 150,                        //width, default: 300
+            h = 150,                            //height, default: 300
+            //r = 75,                          //radius, default: 100
+            r = Math.min(w, h) / 2,
+            color = d3.scale.ordinal()
+            .range(["#161686", "#3278C2", "#AECCEC"]),
+            percentageFormat = d3.format("%");
+
+        /*
+        Data restructuration
+        */
+
+        var removal = function (d) {
+          if  (d === "total" || d === "rot")
+            {return d}
+          else remove(d)
+        };
+
+
+        var nested = d3.nest()
+          .key(function(d) {return d.timeSlot;})
+          //.sortKeys(d3.ascending)
+          .rollup(function(leaves) { 
+            return {
+              //"length": leaves.length, 
+              "cons": d3.sum(leaves, function(d) {return parseFloat(d.sum);
+              })
+            } 
+          })
+          .entries(arr);
+          //.entries(data);
+
+        var acum = d3.sum(nested, function(d) { 
+                        return d.values.cons; 
+                    });
+
+        nested.forEach(function(d) {
+                        d.percentage = d.values.cons / acum;
+                    });
+
+        /*
+        Definition of chart environment
+        */
+
+        var vis = d3.select(attrs.container)
+            .append("svg:svg")              //create the SVG element inside the <body>
+            .data([nested])                  //associate our data with the document
+                .attr("width", w)           //set the width and height of our visualization (these will be attributes of the <svg> tag
+                .attr("height", h)
+            .append("svg:g")                //make a group to hold our pie chart
+                .attr("transform", "translate(" + r + "," + r + ")")    //move the center of the pie chart from 0, 0 to radius, radius
+
+        var arc = d3.svg.arc()              //this will create <path> elements for us using arc data
+            .outerRadius(r);
+
+        var pie = d3.layout.pie()
+            .value(function(d) { return d.percentage; });
+
+        var arcs = vis.selectAll("g.slice")     //this selects all <g> elements with class slice (there aren't any yet)
+            .data(pie)                          //associate the generated pie data (an array of arcs, each having startAngle, endAngle and value properties) 
+            .enter()                            //this will create <g> elements for every "extra" data element that should be associated with a selection. The result is creating a <g> for every object in the data array
+                .append("svg:g")                //create a group to hold each slice (we will have a <path> and a <text> element associated with each slice)
+                    .attr("class", "slice")    //allow us to style things in the slices (like text)
+                    .on("mouseover", function (d) { 
+                      //console.log("d is", d);
+                      showPopover.call(this, d.data); })
+                    .on("mouseout",  function (d) { removePopovers(); });
+
+        ///Labels from the origin or from the HTML template (prioritized over origin):
+        ///Each label is refered to a position 0,1,2... without limitation for introducing it
+        var tarname = [];
+        nested.forEach(function(d) {tarname.push(d.key);});
+
+        var types = attrs.types || tarname;
+
+        var poplabels = attrs.poplabels || {
+            0: 'Percentage',
+            1: 'Consumption',
+        };
+
+        function removePopovers () {
+            $('.popover').each(function() {
+              $(this).remove();
+            }); 
+          }
+
+        function showPopover (d) {
+            $(this).popover({
+              //title: d.name,
+              //placement: 'auto top',
+              placement: function(tip, element) { //$this is implicit
+                var position = $(element).position();
+                var minleft = 210;
+                var mintop = 325;
+                if (position.left < minleft && position.top > mintop) {
+                    return "left";
+                }
+                if (position.left > minleft && position.top > mintop) {
+                    return "right";
+                }
+                if (position.top < mintop){
+                    return "top";
+                }
+                return "bottom";
+              },
+              container: 'body',
+              trigger: 'manual',
+              html : true,
+              content: function() { 
+                return poplabels[0]+ ": " + percentageFormat(d.percentage) + 
+                       "<br/>"+ poplabels[1] + ": " + d3.round(d.values.cons, 1) + " kWh"}
+            });
+            $(this).popover('show')
+          }
+
+            arcs.append("svg:path")
+                    .attr("fill", function(d, i) { return color(i); } )
+                    .style("stroke", "white") //set the color for each slice to be chosen from the color function defined above
+                    .attr("d", arc);                                    //this creates the actual SVG path using the associated data (pie) with the arc drawing function
+
+            arcs.append("svg:text")                                     //add a label to each slice
+                    .attr("transform", function(d) {                    //set the label's origin to the center of the arc
+                    //we have to make sure to set these before calling arc.centroid
+                    d.innerRadius = 0;
+                    d.outerRadius = r;
+                    var c = arc.centroid(d);
+
+                    //return "translate(" + c[0]*2 +"," + c[1]*2 + ")"; 
+                     return "translate("  + c[0]*1 +"," + c[1]*1 + ")";  
+                     //this gives us a pair of coordinates like [50, 50]
+                })
+                .attr("text-anchor", "middle")
+                .style("fill","white")
+                .style("font-size","58%")
+                .style("font-weight","normal") 
+                .attr("dx", "0em")
+                .attr("dy", "-0.5em")                        //center the text on it's origin
+                .text(function(d,i) { 
+                //return d.data.key; //get the label from our original data array
+                return types[i];
+                });       
+        
+
+            arcs.append("svg:text")                                     //add a label to each slice
+                    .attr("transform", function(d) {                    //set the label's origin to the center of the arc
+                    //we have to make sure to set these before calling arc.centroid
+                    d.innerRadius = 0;
+                    d.outerRadius = r;
+                    var c = arc.centroid(d);
+                    return "translate("  + c[0]*1 +"," + c[1]*1 + ")";        //this gives us a pair of coordinates like [50, 50]
+                })
+                .attr("text-anchor", "middle")
+                .style("fill","white")
+                .style("font-size","66%") 
+                .style("font-weight","bold") 
+                .attr("dx", "0em")
+                .attr("dy", "0.7em")                      //center the text on it's origin
+                .text(function(d) { 
+                //return d.data.key; //get the label from our original data array
+                return percentageFormat(d.data.percentage);
+                });   
+
+
+        return ct206_cons;
+
+        };
+
+    Empowering.Graphics.CT206_AVG = function(attrs) {
+
+        var ct206_avg = {};
+        if (typeof attrs.data === 'string') {
+            attrs.data = JSON.parse(attrs.data);
+        }
+
+        /*
+        Some calculated metadata for OT302B
+        */
+
+        var removeByAttr = function(arr, attr, value){
+          var i = arr.length;
+          while(i--){
+            if( arr[i] 
+              && arr[i].hasOwnProperty(attr) 
+              && (arguments.length > 2 && arr[i][attr] === value ) ){ 
+
+              arr.splice(i,1);
+
+            }
+          }
+          return arr;
+        }
+
+        var arr = attrs.data["summary"];
+
+        removeByAttr(arr, "timeSlot", "total");                   
+        //console.log("totaldata is", arr);
+
+        /*
+        Definition of formats and widths
+        */
+
+        var w = 150,                        //width, default: 300
+            h = 150,                            //height, default: 300
+            //r = 75,                          //radius, default: 100
+            r = Math.min(w, h) / 2,
+            color = d3.scale.ordinal()
+            .range(["#FE733A","#ED933D", "#F6CF9F"]),
+            percentageFormat = d3.format("%");
+
+        /*
+        Data restructuration
+        */
+
+        var removal = function (d) {
+          if  (d === "total" || d === "rot")
+            {return d}
+          else remove(d)
+        };
+
+
+        var nested = d3.nest()
+          .key(function(d) {return d.timeSlot;})
+          //.sortKeys(d3.ascending)
+          .rollup(function(leaves) { 
+            return {
+              //"length": leaves.length, 
+              "cons": d3.sum(leaves, function(d) {return parseFloat(d.sum);
+              })
+            } 
+          })
+          .entries(arr);
+          //.entries(data);
+
+        var acum = d3.sum(nested, function(d) { 
+                        return d.values.cons; 
+                    });
+
+        nested.forEach(function(d) {
+                        d.percentage = d.values.cons / acum;
+                    });
+
+        /*
+        Definition of chart environment
+        */
+
+        var vis = d3.select(attrs.container)
+            .append("svg:svg")              //create the SVG element inside the <body>
+            .data([nested])                  //associate our data with the document
+                .attr("width", w)           //set the width and height of our visualization (these will be attributes of the <svg> tag
+                .attr("height", h)
+            .append("svg:g")                //make a group to hold our pie chart
+                .attr("transform", "translate(" + r + "," + r + ")")    //move the center of the pie chart from 0, 0 to radius, radius
+
+        var arc = d3.svg.arc()              //this will create <path> elements for us using arc data
+            .outerRadius(r);
+
+        var pie = d3.layout.pie()
+            .value(function(d) { return d.percentage; });
+
+        var arcs = vis.selectAll("g.slice")     //this selects all <g> elements with class slice (there aren't any yet)
+            .data(pie)                          //associate the generated pie data (an array of arcs, each having startAngle, endAngle and value properties) 
+            .enter()                            //this will create <g> elements for every "extra" data element that should be associated with a selection. The result is creating a <g> for every object in the data array
+                .append("svg:g")                //create a group to hold each slice (we will have a <path> and a <text> element associated with each slice)
+                    .attr("class", "slice")    //allow us to style things in the slices (like text)
+                    .on("mouseover", function (d) { 
+                      //console.log("d is", d);
+                      showPopover.call(this, d.data); })
+                    .on("mouseout",  function (d) { removePopovers(); });
+
+        ///Labels from the origin or from the HTML template (prioritized over origin):
+        ///Each label is refered to a position 0,1,2... without limitation for introducing it
+        var tarname = [];
+        nested.forEach(function(d) {tarname.push(d.key);});
+
+        var types = attrs.types || tarname;
+
+        var poplabels = attrs.poplabels || {
+            0: 'Percentage',
+            1: 'Consumption',
+        };
+
+        function removePopovers () {
+            $('.popover').each(function() {
+              $(this).remove();
+            }); 
+          }
+
+        function showPopover (d) {
+            $(this).popover({
+              //title: d.name,
+              //placement: 'auto top',
+              placement: function(tip, element) { //$this is implicit
+                var position = $(element).position();
+                var minleft = 210;
+                var mintop = 325;
+                if (position.left < minleft && position.top > mintop) {
+                    return "left";
+                }
+                if (position.left > minleft && position.top > mintop) {
+                    return "right";
+                }
+                if (position.top < mintop){
+                    return "top";
+                }
+                return "bottom";
+              },
+              container: 'body',
+              trigger: 'manual',
+              html : true,
+              content: function() { 
+                return poplabels[0]+ ": " + percentageFormat(d.percentage) + 
+                       "<br/>"+ poplabels[1] + ": " + d3.round(d.values.cons, 1) + " kWh"}
+            });
+            $(this).popover('show')
+          }
+
+            arcs.append("svg:path")
+                    .attr("fill", function(d, i) { return color(i); } )
+                    .style("stroke", "white") //set the color for each slice to be chosen from the color function defined above
+                    .attr("d", arc);                                    //this creates the actual SVG path using the associated data (pie) with the arc drawing function
+
+            arcs.append("svg:text")                                     //add a label to each slice
+                    .attr("transform", function(d) {                    //set the label's origin to the center of the arc
+                    //we have to make sure to set these before calling arc.centroid
+                    d.innerRadius = 0;
+                    d.outerRadius = r;
+                    var c = arc.centroid(d);
+
+                    //return "translate(" + c[0]*2 +"," + c[1]*2 + ")"; 
+                     return "translate("  + c[0]*1 +"," + c[1]*1 + ")";  
+                     //this gives us a pair of coordinates like [50, 50]
+                })
+                .attr("text-anchor", "middle")
+                .style("fill","white")
+                .style("font-size","58%")
+                .style("font-weight","normal") 
+                .attr("dx", "0em")
+                .attr("dy", "-0.5em")                        //center the text on it's origin
+                .text(function(d,i) { 
+                //return d.data.key; //get the label from our original data array
+                return types[i];
+                });       
+        
+
+            arcs.append("svg:text")                                     //add a label to each slice
+                    .attr("transform", function(d) {                    //set the label's origin to the center of the arc
+                    //we have to make sure to set these before calling arc.centroid
+                    d.innerRadius = 0;
+                    d.outerRadius = r;
+                    var c = arc.centroid(d);
+                    return "translate("  + c[0]*1 +"," + c[1]*1 + ")";        //this gives us a pair of coordinates like [50, 50]
+                })
+                .attr("text-anchor", "middle")
+                .style("fill","white")
+                .style("font-size","66%") 
+                .style("font-weight","bold") 
+                .attr("dx", "0em")
+                .attr("dy", "0.7em")                      //center the text on it's origin
+                .text(function(d) { 
+                //return d.data.key; //get the label from our original data array
+                return percentageFormat(d.data.percentage);
+                });   
+
+
+        return ct206_avg;
+
+        };       
+
+   Empowering.Graphics.CT409 = function(attrs) {
+        var ct409 = {};
+
+        if (typeof attrs.data === 'string') {
+            attrs.data = JSON.parse(attrs.data);
+        }
+        var data = attrs.data;
+
+        /*
+        Some calculated metadata for OT103
+        */
+
+        /*ct409.getDiffConsumption = function() {
+            var eff = 0;
+            var med = 0;
+            var consumption_last12month = d3.sum(data, function(d) {
+                return d.consumption;
+            });
+            var avgConsumption_last12month = d3.sum(data, function(d) {
+                if (d.consumption !== null) {
+                    return d.averageConsumption;
+                }
+            });
+            var avgEffConsumption_last12month = d3.sum(data, function(d) {
+                if (d.consumption !== null) {
+                    return d.averageEffConsumption;
+                }
+            });
+            var consumption_last3month = d3.sum(data.slice(length-3,length[length]), function(d) {
+                return d.consumption;
+            });
+            var avgConsumption_last3month = d3.sum(data.slice(length-3,length[length]), function(d) {
+                if (d.consumption !== null) {
+                    return d.averageConsumption;
+                }
+            });
+            var avgEffConsumption_last3month = d3.sum(data.slice(length-3,length[length]), function(d) {
+                if (d.consumption !== null) {
+                    return d.averageEffConsumption;
+                }
+            });
+
+            eff = parseFloat(((avgEffConsumption_last3month-consumption_last3month)/(consumption_last12month) * 100).toFixed(2));
+            med = parseFloat(((avgConsumption_last3month-consumption_last3month)/(consumption_last12month) * 100).toFixed(2));
+            return {eff: eff, med: med};
+        };*/
+
+        /*
+        Definition of chart environment 
+        */
+
+        var parseDate = d3.time.format('%Y%m').parse;
+
+        var margin = {top: 5, right: 40, bottom: 85, left: 40};
+        var width = 1040 - margin.left - margin.right;
+        var height = 400 - margin.top - margin.bottom;
+
+        var svg = d3.select(attrs.container)
+                   .append('div')
+                   .classed("svg-container-ot103", true) //container class to make it responsive
+                   .append("svg")
+                   //responsive SVG needs these 2 attributes and no width and height attr
+                   .attr("preserveAspectRatio", "xMinYMin meet")
+                   .attr("viewBox", "0 0 1040 400")
+                   //class to make it responsive
+                   .classed("svg-content-responsive", true)
+                   .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+                    .attr("class", "ot103");
+
+        ///***Definition of scales for the two axis***
+        var x = d3.time.scale().range([0, width]);
+        var y = d3.scale.linear().range([height, 0]);
+
+        ///***Preparation for data selection***
+        var allCons = [];
+        var consumption = [];
+        var averageConsumption = [];
+        //var averageEffConsumption = [];
+
+        data.forEach(function(d) {
+            d.month = parseDate(d.month + '');
+            if (d.consumption !== null) {
+                consumption.push(d);
+            }
+            if (d.averageConsumption !== null) {
+                averageConsumption.push(d);
+            }
+            //if (d.averageEffConsumption !== null) {
+            //    averageEffConsumption.push(d);
+            //}
+            allCons.push(
+                d.consumption, d.averageConsumption//,d.averageEffConsumption
+            );
+        });
+
+        ///***Definition of data domains***
+        x.domain(d3.extent(data, function(d) { return d.month; }));
+        y.domain(d3.extent(allCons));
+
+        ///***Definition of selection for user language or predefined language***
+        var locale = Empowering.LOCALES[attrs.locale || "en_UK"];
+
+        ///***Definition of orientation and format for the two axis***
+        var xAxis = d3.svg.axis().scale(x).orient("bottom")
+            //.tickSize(5)
+            .tickFormat(d3.time.format('%m/%Y'))
+            //.tickFormat(locale.timeFormat("%b %y"))
+            .ticks(d3.min([12, data.length])); //.ticks(d3.time.years, 2); //other way to define
+        var yAxis = d3.svg.axis().scale(y).orient("left").ticks(5);
+
+        ///***Definition of multiline chart***
+        var line = d3.svg.line()
+            .x(function(d) { return x(d.month); })
+            .y(function(d) { return y(d.consumption); });
+
+        /*var lineAvgEff = d3.svg.line()
+            .x(function(d) { return x(d.month); })
+            .y(function(d) { return y(d.averageEffConsumption); });*/
+
+        var lineAvg = d3.svg.line()
+            .x(function(d) { return x(d.month); })
+            .y(function(d) { return y(d.averageConsumption); });
+
+        ///***Definition of style for the two axis***
+        ///xAxis
+        svg.append('g')
+            .attr('class', 'x axis')
+            .attr('transform', 'translate(0,' + height + ')')
+            .call(xAxis);
+        ///yAxis
+        svg.append('g')
+            .attr('class', 'y axis')
+            .call(yAxis)
+            .append('text')
+              .attr('transform', 'rotate(-90)')
+              .attr('y', 6)
+              .attr('dy', '.71em')
+              .style('text-anchor', 'end')
+              .text('cosY');
+
+        ///***Definition of legend***
+        var labels = attrs.labels || {
+            0: 'Your neighbors',
+            1: 'You',
+        };
+
+        var styles = {
+          0: 'averageConsumption',
+          1: 'consumption',
+
+        };
+
+        var poplabels = attrs.poplabels || {
+            0: 'Consumption'
+        };
+
+        ///VISUALIZATION FOR THE TEXT
+        [0, 1, 2].forEach(function(idx) {
+            svg.append('g')
+                .attr('class', 'legend')
+                .append('text')
+                .attr('x', 130+(idx*width/3.1))
+                .attr('y', height + margin.bottom/1.2)
+                .attr('class', styles[idx]) ///when a specific style is defined in CSS file, put it here
+                .text(labels[idx]);
+        });
+
+        ///VISUALIZATION FOR THE POINTS 
+        var legend = svg.append('circle')
+                .attr('class', 'point consumption')
+                //.attr("cx", width/2.5+x.rangeBand()*2.5)
+                .attr("cx", width/2-70)
+                .attr("cy", height + margin.bottom/1.35)
+                .attr('r', 12);
+
+        var legendAvg = svg.append('circle')
+                .attr('class', 'point averageConsumption')
+                //.attr("cx", width/2.5+x.rangeBand()*2.5)
+                .attr("cx", 0+100)
+                .attr("cy", height + margin.bottom/1.35)
+                .attr('r', 10);
+
+        /*var legendAvgEff = svg.append('circle')
+                .attr('class', 'point averageEffConsumption')
+                //.attr("cx", width/2.5+x.rangeBand()*2.5)
+                .attr("cx", width-240)
+                .attr("cy", height + margin.bottom/1.35)
+                .attr('r', 10);*/
+
+        ///***Definition of paths***
+        svg.selectAll('.ot103')
+            .data(data).enter()
+            .append('line')
+            .attr('class', 'x vertical')
+            .attr('x1', function(d) { return x(d.month); })
+            .attr('x2', function(d) { return x(d.month); })
+            .attr('y1', 0)
+            .attr('y2', height);
+
+        /*svg.append('path')
+            .datum(averageEffConsumption)
+            .attr('class', 'line averageEffConsumption')
+            .attr('d', lineAvgEff);
+
+        svg.selectAll('.ot103')
+            .data(averageEffConsumption).enter()
+            .append('circle')
+            .attr('class', 'point averageEffConsumption')
+            .attr('cx', function(d) { return x(d.month); })
+            .attr('cy', function(d) { return y(d.averageEffConsumption); })
+            .attr('r', 6)
+            .on("mouseover", function (d) { showPopoverLineEff.call(this, d); })
+            .on("mouseout",  function (d) { removePopovers(); });*/
+
+        svg.append('path')
+            .datum(averageConsumption)
+            .attr('class', 'line averageConsumption')
+            .attr('d', lineAvg);
+
+        svg.selectAll('.ot103')
+            .data(averageConsumption).enter()
+            .append('circle')
+            .attr('class', 'point averageConsumption')
+            .attr('cx', function(d) { return x(d.month); })
+            .attr('cy', function(d) { return y(d.averageConsumption); })
+            .attr('r', 6)
+            .on("mouseover", function (d) { showPopoverLineAvg.call(this, d); })
+            .on("mouseout",  function (d) { removePopovers(); });
+
+        svg.append('path')
+            .datum(consumption)
+            .attr('class', 'line consumption')
+            .attr('d', line);
+
+        svg.selectAll('.ot103')
+            .data(consumption).enter()
+            .append('circle')
+            .attr('class', 'point consumption')
+            .attr('cx', function(d) { return x(d.month); })
+            .attr('cy', function(d) { return y(d.consumption); })
+            .attr('r', 8)
+            .on("mouseover", function (d) { showPopoverLine.call(this, d); })
+            .on("mouseout",  function (d) { removePopovers(); });
+
+        ///***Definition of functions for dynamisation of chart***
+        ///WHEN NO OVER 
+        function removePopovers () {
+        $('.popover').each(function() {
+          $(this).remove();
+        }); 
+        }
+
+        ///WHEN OVER POINT OF EACH LINE
+        function showPopoverLineAvg (d) {
+        $(this).popover({
+          title: labels[0],//d.name,
+          placement: 'auto top',
+          container: 'body',
+          trigger: 'manual',
+          html : true,
+          content: function() { 
+            return  poplabels[0] + ": " + d3.round(d3.format(",")(d.averageConsumption), 1)+ " kWh";
+            }
+        });
+        $(this).popover('show')
+        }
+
+        function showPopoverLine (d) {
+        $(this).popover({
+          title: labels[1],//d.name,
+          placement: 'auto top',
+          container: 'body',
+          trigger: 'manual',
+          html : true,
+          content: function() { 
+            return  poplabels[0] + ": " + d3.round(d3.format(",")(d.consumption), 1)+ " kWh";
+            }
+        });
+        $(this).popover('show')
+        }
+
+        /*function showPopoverLineEff (d) {
+        $(this).popover({
+          title: labels[2],//d.name,
+          placement: 'auto top',
+          container: 'body',
+          trigger: 'manual',
+          html : true,
+          content: function() { 
+            return  poplabels[0] + ": " + d3.round(d3.format(",")(d.averageEffConsumption), 1)+ " kWh";
+            }
+        });
+        $(this).popover('show')
+        }*/
+
+        return ct409;
     };
 
 
-    Empowering.Graphics.OT503 = function(attrs) {
-        var ot503 = {};
+
+
+    Empowering.Graphics.CT410 = function(attrs) {
+        var ct410 = {};
 
         if (typeof attrs.data === 'string') {
             attrs.data = JSON.parse(attrs.data);
@@ -1347,7 +2205,7 @@ var Empowering = {};
         $(this).popover('show')
         }
 
-        return ot503;
+        return ct410;
     };
 
 
