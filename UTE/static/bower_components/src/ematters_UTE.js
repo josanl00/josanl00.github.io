@@ -156,9 +156,9 @@ var Empowering = {};
         alert(array_values);*/
 
         ///Arrays of different data for bar charts
-        var tariffs = new Array(); //legend data
-        var cons = ["consumption"]; //cons_bar data
-        var avg = ["averageConsumption"]; // avg_bar data
+        var tariffs = new Array(); 
+        var cons = new Array(); //cons_bar data, "consumption" key is assigned as 1 for matrix calculation
+        var avg = new Array(); // avg_bar data,  "averageConsumption" key is assigned as 2 for matrix calculation
         for (var key in cons_d) {
           tariffs.push(key);
           cons.push(cons_d[key]);
@@ -167,14 +167,13 @@ var Empowering = {};
           avg.push(avg_d[key]);
         };
 
-        ///Array for legend position depending on 
+        ///Array for legends depending on 
         ///number of tariffs
-        var l_legend = []; //number of legends
-        for (key in cons) {
+        var l_legend = new Array(); 
+        for (key in tariffs) {
             l_legend.push(40);
         };
-        l_legend.shift(); //deletes the first value in an array
-        //console.log("legends", l_legend) //e.g. [50,50,50]
+        //console.log("", tariffs) //e.g. [40,40,40]
         var l_position = []; //legend positions
         l_legend.reduce(function(a,b,i) { return l_position[i] = a+b; },0);
 
@@ -183,14 +182,19 @@ var Empowering = {};
         //Caution! to perform this method, keys should 
         ///be ordered from more consumption (i.e. "pN") to
         ///less (i.e. "p0")
-        tariffs.sort(function(a,b) {return b-a;});
         cons.sort(function(a,b) {return b-a;});
         avg.sort(function(a,b) {return b-a;});
         l_position.sort(function(a,b) {return b-a;});
-        //console.log("tariffs", tariffs) //e.g. ["three","two","one"]
-        //console.log("user consumption", cons) //e.g. [180,100,20]
-        //console.log("average consumption", avg) //e.g. [180,100,20]
-        //console.log("legend positions", l_position) //e.g. [150,100,50]
+
+        ///Add to beginning of arrays each key to allow
+        ///the matrix calculation
+        cons.unshift("consumption");
+        avg.unshift("averageConsumption");
+
+        console.log("tariffs", tariffs) //e.g. ["three","two","one"]
+        console.log("user consumption", cons) //e.g. [180,100,20,1]
+        console.log("average consumption", avg) //e.g. [180,100,20,1]
+        console.log("legend positions", l_position) //e.g. [120,80,40]
 
         ///Definition of chart environment
 
@@ -227,12 +231,14 @@ var Empowering = {};
         var avg_matrix = [avg];
 
         ///Distribution of data for each chart
+        //var cons_remapped =["c1","c2","c3"].map(function(dat,i){
         var cons_remapped =tariffs.map(function(dat,i){
             return cons_matrix.map(function(d,ii){
                 return {x: ii, y: d[i+1] };
             })
         });
-        var avg_remapped =tariffs.map(function(dat,i){ 
+        //var avg_remapped =["c1","c2","c3"].map(function(dat,i){
+        var avg_remapped =tariffs.map(function(dat,i){  
             return avg_matrix.map(function(d,ii){
                 return {x: ii, y: d[i+1] };
             })
@@ -283,10 +289,9 @@ var Empowering = {};
         ///DRAWING STACKED BAR WITH ROUNDED EFFECT
         ///Right chart 
         cons_bar.selectAll("path")
-            .data(function(d){console.log("d", d);return d;})
+            .data(function(d){return d;})
             .enter().append("path")          
             .attr("d", function(d) { 
-                console.log("dd", d);
                 return roundedRect(
                     rectWidth,-ycons(d.y)-ycons(d.y0), barEnerWidth, ycons(d.y)+barEnerWidth/5, barEnerWidth/5, 
                     false, false, true, true);
@@ -382,8 +387,6 @@ var Empowering = {};
             .attr('class', 'icons')
             .attr('style', 'font: ' + parseInt(width / 8) + 'px FontAwesome;' +
                             'text-anchor: start')
-            //.attr('x', width-3*width/8)
-            //.attr('y', 50)//barHeight)
             .attr("transform", "translate("+(45)+","+-barHeight+") rotate(180)")
             .text(icons[1]);
 
@@ -392,8 +395,6 @@ var Empowering = {};
             .attr('class', 'icons')
             .attr('style', 'font: ' + parseInt(width / 8) + 'px FontAwesome;' +
                             'text-anchor: end')
-            //.attr('x', width-3*width/8)
-            //.attr('y', 50)//barHeight)
             .attr("transform", "translate("+(barWidth)+","+-barHeight+") rotate(180)")
             .text(icons[0]);
 
@@ -401,8 +402,6 @@ var Empowering = {};
         ///Right chart
         cons_bar.append("rect")
             .attr("class", "line")
-            //.attr("x", rectWidth+barEnerWidth-100) 
-            //.attr("y", barHeight)
             .attr("width", rectWidth+barEnerWidth-10)
             .attr("height", 2)
             .attr("transform", "translate("+(barWidth-15-10)+","+-barHeight+") rotate(180)")
@@ -411,8 +410,6 @@ var Empowering = {};
         ///Left chart
         avg_bar.append("rect")
             .attr("class", "line")
-            //.attr("x", 10) 
-            //.attr("y", barHeight)
             .attr("width", rectWidth+barEnerWidth-10)
             .attr("height", 2)
             .attr("transform", "translate("+(barWidth+50-10)+","+-barHeight+") rotate(180)")
@@ -422,8 +419,6 @@ var Empowering = {};
         ///Right chart
         cons_bar.append('text')
         .attr("text-anchor", "middle")
-            //.attr('x', barWidth/2)
-            //.attr('y', height -10)
             .attr('class', 'label')
             .attr('style', 'font-size: ' + labelSize + 'px')
             .attr("transform", "translate("+(barWidth-65)+","+(-barHeight-40)+") rotate(180)")
@@ -432,22 +427,10 @@ var Empowering = {};
         ///Left chart
         avg_bar.append('text')
         .attr("text-anchor", "middle")
-            //.attr('x', barWidth/2)
-            //.attr('y', height -10)
             .attr('class', 'label')
             .attr('style', 'font-size: ' + labelSize + 'px')
             .attr("transform", "translate("+(barWidth-85)+","+(-barHeight-40)+") rotate(180)")
             .text(labels[0]);
-
-
-
-
-        
-
-
-
-
-
  
         return ct105;
 
