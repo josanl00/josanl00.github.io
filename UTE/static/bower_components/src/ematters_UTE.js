@@ -426,7 +426,7 @@ var Empowering = {};
             //.attr('y', height -10)
             .attr('class', 'label')
             .attr('style', 'font-size: ' + labelSize + 'px')
-            .attr("transform", "translate("+(barWidth-55)+","+(-barHeight-40)+") rotate(180)")
+            .attr("transform", "translate("+(barWidth-65)+","+(-barHeight-40)+") rotate(180)")
             .text(labels[1]);
 
         ///Left chart
@@ -436,7 +436,7 @@ var Empowering = {};
             //.attr('y', height -10)
             .attr('class', 'label')
             .attr('style', 'font-size: ' + labelSize + 'px')
-            .attr("transform", "translate("+(barWidth-55)+","+(-barHeight-40)+") rotate(180)")
+            .attr("transform", "translate("+(barWidth-85)+","+(-barHeight-40)+") rotate(180)")
             .text(labels[0]);
 
 
