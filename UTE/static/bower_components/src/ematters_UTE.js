@@ -169,13 +169,13 @@ var Empowering = {};
 
         ///Array for legends depending on 
         ///number of tariffs
-        var l_legend = new Array(); 
+        var l_tariffs = new Array(); 
         for (key in tariffs) {
-            l_legend.push(40);
+            l_tariffs.push(40);
         };
-        //console.log("", tariffs) //e.g. [40,40,40]
-        var l_position = []; //legend positions
-        l_legend.reduce(function(a,b,i) { return l_position[i] = a+b; },0);
+        //console.log("number of tariffs", l_tariffs) //e.g. [40,40,40]
+        var l_stacked = []; //legend positions
+        l_tariffs.reduce(function(a,b,i) { return l_stacked[i] = a+b; },0);
 
         ///Sorted values according to preference of 
         ///data visualization.
@@ -184,7 +184,7 @@ var Empowering = {};
         ///less (i.e. "p0")
         cons.sort(function(a,b) {return b-a;});
         avg.sort(function(a,b) {return b-a;});
-        l_position.sort(function(a,b) {return b-a;});
+        l_stacked.sort(function(a,b) {return b-a;});
 
         ///Add to beginning of arrays each key to allow
         ///the matrix calculation
@@ -194,7 +194,7 @@ var Empowering = {};
         console.log("tariffs", tariffs) //e.g. ["three","two","one"]
         console.log("user consumption", cons) //e.g. [180,100,20,1]
         console.log("average consumption", avg) //e.g. [180,100,20,1]
-        console.log("legend positions", l_position) //e.g. [120,80,40]
+        console.log("legend positions", l_stacked) //e.g. [120,80,40]
 
         ///Definition of chart environment
 
@@ -273,18 +273,18 @@ var Empowering = {};
 
         ///Legend chart
         var cons_legend = main.selectAll('div')
-            .data(l_position)
+            .data(l_stacked)
             .enter().append('g')
             .style("fill", function(d, i) { return cons_color(i); })
             .attr('transform', 'translate(' + (barWidth+5) + ','+
-                (l_position.length<4 ? barHeight-30 : barHeight+5)+')');
+                (l_stacked.length<4 ? barHeight-30 : barHeight+5)+')');
 
         var avg_legend = main.selectAll('div')
-            .data(l_position)
+            .data(l_stacked)
             .enter().append('g')
             .style("fill", function(d, i) { return avg_color(i); })
             .attr('transform', 'translate(' + (barWidth+5) + ','+
-                (l_position.length<4 ? barHeight-30 : barHeight+5)+')');
+                (l_stacked.length<4 ? barHeight-30 : barHeight+5)+')');
 
         ///DRAWING STACKED BAR WITH ROUNDED EFFECT
         ///Right chart 
@@ -313,14 +313,14 @@ var Empowering = {};
         cons_legend.append('path')
                 .attr('d', function(d,i) {
                     return roundedRect(
-                        100, -l_position[i], 50, 25, 14, 
+                        100, -l_stacked[i], 50, 25, 14, 
                         false, true, false, true);
                 });
 
         avg_legend.append('path')
                 .attr('d', function(d,i) {
                     return roundedRect(
-                        50, -l_position[i], 50, 25, 14,
+                        50, -l_stacked[i], 50, 25, 14,
                         true, false, true, false);
                 });
 
@@ -375,7 +375,7 @@ var Empowering = {};
         ///Legend chart
         avg_legend.append('text')
             .attr('x', 100)//barWidth-width/8-(width/8)/2 )
-            .attr('y', function(d,i) { return -l_position[i]+16; })
+            .attr('y', function(d,i) { return -l_stacked[i]+16; })
             .attr('class', 'label_ct105_legend')
             .attr('style', 'fill: white')
             .attr("text-anchor", "middle")

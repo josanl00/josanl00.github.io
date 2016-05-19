@@ -488,9 +488,47 @@
 
 <!--HTML: CT409 service-->
 <h1>&nbsp;Análisis de energía reactiva</h1>
+<div id="controlPanel">
+  <h1 id="stopButton" class="button">Stop</h1>
+  <h1 id="slowButton" class="button">Caution</h1>
+  <h1 id="goButton" class="button">Go</h1>
+</div>
+<div id="traffic-light">
+  <div id="stopLight" class="bulb"></div>
+  <div id="slowLight" class="bulb"></div>
+  <div id="goLight" class="bulb"></div>
+</div>
 <div class="chart-ct409" id="chartct409"></div>
 <!--JS: CT409 service-->
 <script>
+    ///TRAFFIC LIGHT (TEMPORAL INSERTION)
+    ////////////////////////////////////
+    document.getElementById('stopButton').onclick = illuminateRed;
+    document.getElementById('slowButton').onclick = illuminateYellow;
+    document.getElementById('goButton').onclick = illuminateGreen;
+
+    function illuminateRed() {
+      clearLights();
+      document.getElementById('stopLight').style.backgroundColor = "red";
+    }
+
+    function illuminateYellow() {
+      clearLights();
+      document.getElementById('slowLight').style.backgroundColor = "yellow";
+    }
+
+    function illuminateGreen() {
+      clearLights();
+      document.getElementById('goLight').style.backgroundColor = "green";
+    }
+
+    function clearLights() {
+      document.getElementById('stopLight').style.backgroundColor = "white";
+      document.getElementById('slowLight').style.backgroundColor = "white";
+      document.getElementById('goLight').style.backgroundColor = "white";
+    }
+    ////////////////////////////////////
+
     var result_ct409 = [{"criteriaSelected": "buildingId", "numberCustomersEff": 21.0, "consumption": 195.998, "consumptionNumberOfDays": 30.0, "averageEffConsumption": 180.116284761905, "companyId": 1234509876.0, "month": 201410.0, "numberCustomers": 68.0, "averageConsumption": 299.062043676471, "contractId": "000db922b1fc22"}, {"criteriaSelected": "buildingId", "numberCustomersEff": 21.0, "consumption": 186.998, "consumptionNumberOfDays": 30.0, "averageEffConsumption": 199.116284761905, "companyId": 1234509876.0, "month": 201411.0, "numberCustomers": 68.0, "averageConsumption": 275.062043676471, "contractId": "000db922b1fc22"}, {"criteriaSelected": "buildingId", "numberCustomersEff": 21.0, "consumption": 229.998, "consumptionNumberOfDays": 30.0, "averageEffConsumption": 210.116284761905, "companyId": 1234509876.0, "month": 201412.0, "numberCustomers": 68.0, "averageConsumption": 289.062043676471, "contractId": "000db922b1fc22"}, {"criteriaSelected": "buildingId", "numberCustomersEff": 21.0, "consumption": 210.998, "consumptionNumberOfDays": 30.0, "averageEffConsumption": 195.116284761905, "companyId": 1234509876.0, "month": 201501.0, "numberCustomers": 68.0, "averageConsumption": 360.062043676471, "contractId": "000db922b1fc22"}, {"criteriaSelected": "buildingId", "numberCustomersEff": 21.0, "consumption": 198.998, "consumptionNumberOfDays": 30.0, "averageEffConsumption": 200.116284761905, "companyId": 1234509876.0, "month": 201502.0, "numberCustomers": 68.0, "averageConsumption": 350.062043676471, "contractId": "000db922b1fc22"}, {"criteriaSelected": "buildingId", "numberCustomersEff": 21.0, "consumption": 195.998, "consumptionNumberOfDays": 30.0, "averageEffConsumption": 180.116284761905, "companyId": 1234509876.0, "month": 201503.0, "numberCustomers": 68.0, "averageConsumption": 320.062043676471, "contractId": "000db922b1fc22"}, {"criteriaSelected": "buildingId", "numberCustomersEff": 21.0, "consumption": 199.998, "consumptionNumberOfDays": 30.0, "averageEffConsumption": 160.116284761905, "companyId": 1234509876.0, "month": 201504.0, "numberCustomers": 68.0, "averageConsumption": 300.062043676471, "contractId": "000db922b1fc22"}, {"criteriaSelected": "buildingId", "numberCustomersEff": 21.0, "consumption": 165.998, "consumptionNumberOfDays": 30.0, "averageEffConsumption": 135.116284761905, "companyId": 1234509876.0, "month": 201505.0, "numberCustomers": 68.0, "averageConsumption": 275.062043676471, "contractId": "000db922b1fc22"}, {"criteriaSelected": "buildingId", "numberCustomersEff": 21.0, "consumption": 180.998, "consumptionNumberOfDays": 30.0, "averageEffConsumption": 155.116284761905, "companyId": 1234509876.0, "month": 201506.0, "numberCustomers": 68.0, "averageConsumption": 265.062043676471, "contractId": "000db922b1fc22"}, {"criteriaSelected": "buildingId", "numberCustomersEff": 21.0, "consumption": 203.998, "consumptionNumberOfDays": 30.0, "averageEffConsumption": 155.116284761905, "companyId": 1234509876.0, "month": 201507.0, "numberCustomers": 68.0, "averageConsumption": 265.062043676471, "contractId": "000db922b1fc22"}, {"criteriaSelected": "buildingId", "numberCustomersEff": 21.0, "consumption": 200.998, "consumptionNumberOfDays": 30.0, "averageEffConsumption": 178.116284761905, "companyId": 1234509876.0, "month": 201508.0, "numberCustomers": 68.0, "averageConsumption": 259.062043676471, "contractId": "000db922b1fc22"}, {"criteriaSelected": "buildingId", "numberCustomersEff": 21.0, "consumption": 189.998, "consumptionNumberOfDays": 30.0, "averageEffConsumption": 155.116284761905, "companyId": 1234509876.0, "month": 201509.0, "numberCustomers": 68.0, "averageConsumption": 277.062043676471, "contractId": "000db922b1fc22"}];
     var ct409 = Empowering.Graphics.CT409({
         container: "#chartct409", data: JSON.stringify(result_ct409),
