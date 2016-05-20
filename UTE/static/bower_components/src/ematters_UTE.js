@@ -159,12 +159,15 @@ var Empowering = {};
         var tariffs = new Array(); 
         var cons = new Array(); //cons_bar data, "consumption" key is assigned as 1 for matrix calculation
         var avg = new Array(); // avg_bar data,  "averageConsumption" key is assigned as 2 for matrix calculation
+        var total = new Array(); 
         for (var key in cons_d) {
           tariffs.push(key);
           cons.push(cons_d[key]);
+          total.push(cons_d[key]);
         };
         for (var key in avg_d) {
           avg.push(avg_d[key]);
+          total.push(avg_d[key]);
         };
 
         ///Array for legends depending on 
@@ -182,18 +185,21 @@ var Empowering = {};
         //Caution! to perform this method, keys should 
         ///be ordered from more consumption (i.e. "pN") to
         ///less (i.e. "p0")
-        cons.sort(function(a,b) {return b-a;});
-        avg.sort(function(a,b) {return b-a;});
-        l_stacked.sort(function(a,b) {return b-a;});
+        cons.sort(function(a,b) {return a-b;});
+        avg.sort(function(a,b) {return a-b;});
+        total.sort(function(a,b) {return b-a;});
+        l_stacked.sort(function(a,b) {return a-b;});
 
         ///Add to beginning of arrays each key to allow
         ///the matrix calculation
         cons.unshift("consumption");
         avg.unshift("averageConsumption");
+        total.unshift("total");
 
         console.log("tariffs", tariffs) //e.g. ["three","two","one"]
         console.log("user consumption", cons) //e.g. [180,100,20,1]
         console.log("average consumption", avg) //e.g. [180,100,20,1]
+        console.log("total", total) //e.g. ["three","two","one"]
         console.log("legend positions", l_stacked) //e.g. [120,80,40]
 
         ///Definition of chart environment
@@ -219,16 +225,20 @@ var Empowering = {};
                    .classed("svg-content-responsive", true); 
 
         ///Definition of ranges
-        var ycons = d3.scale.linear().range([0, barHeight]);
-        var yavg = d3.scale.linear().range([0, barHeight]); 
+        var ycons = d3.scale.linear().range([0,barHeight]);
+        var yavg = d3.scale.linear().range([0, barHeight]);
+        var ytext = d3.scale.linear().range([0,-barHeight]);
         //var z = d3.scale.ordinal().range(["darkblue", "blue", "lightblue"])
-        var cons_color = d3.scale.ordinal().range(["#AECCEC", "#3278C2", "#161686"]);
-        var avg_color = d3.scale.ordinal().range(["#F6CF9F", "#ED933D", "#FE733A"]);
+        //var cons_color = d3.scale.ordinal().range(["#AECCEC", "#3278C2", "#161686"]);
+        //var avg_color = d3.scale.ordinal().range(["#F6CF9F", "#ED933D", "#FE733A"]);
+        var cons_color = d3.scale.ordinal().range(["#161686", "#3278C2", "#AECCEC"]);
+        var avg_color = d3.scale.ordinal().range(["#FE733A", "#ED933D", "#F6CF9F"]);
 
         ///Data model as matrix for each chart:
         ///1 row & CHART_ID+TARIFF_N columns like CHART_ID,TARIFF_1,...,TARIFF_N
         var cons_matrix = [cons];
         var avg_matrix = [avg];
+        var total_matrix = [total];
 
         ///Distribution of data for each chart
         //var cons_remapped =["c1","c2","c3"].map(function(dat,i){
@@ -243,24 +253,49 @@ var Empowering = {};
                 return {x: ii, y: d[i+1] };
             })
         });
+        var total_remapped =tariffs.map(function(dat,i){  
+            return total_matrix.map(function(d,ii){
+                return {x: ii, y: d[i+1] };
+            })
+        });
 
         ///Call to stacked method with x, y0, y1 predefined
         var cons_stacked = d3.layout.stack()(cons_remapped);
         var avg_stacked = d3.layout.stack()(avg_remapped);
+        var total_stacked = d3.layout.stack()(total_remapped);
 
         ///Definition of domains
-        ycons.domain([0, d3.max(cons_stacked[cons_stacked.length - 1], 
+        ycons.domain([0, d3.max(total_stacked[total_stacked.length - 1], 
+            function(d) { return d.y0 + d.y; })]);
+        yavg.domain([0, d3.max(total_stacked[total_stacked.length - 1], 
+            function(d) { return d.y0 + d.y; })]);
+        ytext.domain([0, d3.max(total_stacked[total_stacked.length - 1], 
+            function(d) { return d.y0 + d.y; })]);
+        /*ycons.domain([0, d3.max(cons_stacked[cons_stacked.length - 1], 
             function(d) { return d.y0 + d.y; })]);
         yavg.domain([0, d3.max(avg_stacked[avg_stacked.length - 1], 
-            function(d) { return d.y0 + d.y; })]);
+            function(d) { return d.y0 + d.y; })]);*/
 
         ///MAIN CHART DEFINITION
-        ///Right chart 
+        ///Right chart
+        //var y_stacked = []; //legend positions
+        //(function (d){return ycons(cons_stacked[d][0].y);}).reduce(function(a,b,i) { return y_stacked[i] = a+b; },0)
+        //console.log("max",y_stacked)
         var cons_bar = main.selectAll("div")
         .data(cons_stacked)
         .enter().append("g")
         .style("fill", function(d, i) { return cons_color(i); })
-        .attr("transform", "translate("+(width*2-25-barEnerWidth-rectWidth+5)+",20) rotate(180)");
+        //.style("fill-opacity", .8)
+        .attr('transform', 'translate(' + (width-width/8) + ',228)')
+        /*.attr("transform", function(d) {
+            console.log("daigiual",ycons(y_varois))
+            return "translate("+(width*2-25-barEnerWidth-rectWidth+5)+","+
+            (-ycons(y_varois)+barHeight)+") rotate(180)"
+        ;}*/
+        ;
+
+            //"translate("+(width*2-25-barEnerWidth-rectWidth+5)+","+
+            //(-barHeight+stack_cons)+") rotate(180)");
         //.style("stroke", function(d, i) { return d3.rgb(z(i)).darker(); });
 
         ///Left chart
@@ -268,7 +303,13 @@ var Empowering = {};
         .data(avg_stacked)
         .enter().append("g")
         .style("fill", function(d, i) { return avg_color(i); })
-        .attr("transform", "translate("+(barEnerWidth+rectWidth*2+5)+",20) rotate(180)");
+        /*.attr("transform", function(d) {
+            console.log("daigiual",yavg(ya_varois))
+            return "translate("+(barEnerWidth+rectWidth*2+5)+","+
+            (-yavg(ya_varois)+barHeight)+") rotate(180)"
+        ;}*/
+        .attr('transform', 'translate(10,228)')
+        ;
         //.style("stroke", function(d, i) { return d3.rgb(z(i)).darker(); });
 
         ///Legend chart
@@ -292,10 +333,17 @@ var Empowering = {};
             .data(function(d){return d;})
             .enter().append("path")          
             .attr("d", function(d) { 
+                console.log("ji",d)
+                console.log("jor",ycons(d.y))
+                console.log("jor1",ycons(d.y0))
                 return roundedRect(
-                    rectWidth,-ycons(d.y)-ycons(d.y0), barEnerWidth, ycons(d.y)+barEnerWidth/5, barEnerWidth/5, 
-                    false, false, true, true);
-                    //true, true, false, false);
+                    //rectWidth, ycons(d.y), barEnerWidth,-ycons(d.y)-ycons(d.y0),0,// barEnerWidth/5, 
+                    rectWidth, -ycons(d.y)-ycons(d.y0), barEnerWidth, ycons(d.y)+barEnerWidth/5, barEnerWidth/5, 
+                    //rectWidth,-ycons(d.y)-ycons(d.y0), barEnerWidth, ycons(d.y)+barEnerWidth/5, barEnerWidth/5, 
+                    //x(d.x),-y(d.y)-y(d.y0)-100,100,y((d).y)+25,25,
+                    //false, false, true, true);
+                    //false,false,false, false);
+                    true, true,false, false);
                 });
 
         ///Left chart
@@ -303,10 +351,14 @@ var Empowering = {};
             .data(function(d){return d;})
             .enter().append("path")          
             .attr("d", function(d) { 
+                /*console.log("ji",d)
+                console.log("jor",ycons(d.y))
+                console.log("jor1",ycons(d.y0))*/
                 return roundedRect(
+                    //rectWidth, yavg(d.y), barEnerWidth,-yavg(d.y)-yavg(d.y0),0,// barEnerWidth/5,
                     rectWidth,-yavg(d.y)-yavg(d.y0), barEnerWidth, yavg(d.y)+barEnerWidth/5, barEnerWidth/5, 
-                    false, false, true, true);
-                    //true, true, false, false);
+                    //false, false, true, true);
+                    true, true, false, false);
                 });
 
         ///Legend chart
@@ -352,9 +404,11 @@ var Empowering = {};
         cons_bar.selectAll("text")
             .data(function(d){return d;})
             .enter().append("text")
-            .attr('x', -barEnerWidth-25)
-            .attr('y', function(d) {return  22+(ycons(d.y0))-25;})
-            .attr("transform","translate(0,0) rotate(180)")
+            .attr('x', barWidth-width/8-(width/8)/2 )
+            .attr('y', function(d) { return 10 +ytext(d.y0)+ytext(d.y)+30; })
+            //.attr('x', -barEnerWidth-25)
+            //.attr('y', function(d) {return  22+(ycons(d.y0))-25;})
+            //.attr("transform","translate(0,0) rotate(180)")
             .attr('class', 'label_ct105_bar')
             .attr('style', 'fill: white')
             .attr("text-anchor", "middle")
@@ -364,9 +418,11 @@ var Empowering = {};
         avg_bar.selectAll("text")
             .data(function(d){return d;})
             .enter().append("text")
-            .attr('x', -barEnerWidth-25)
-            .attr('y', function(d) {return  22+(yavg(d.y0))-25;})
-            .attr("transform","translate(0,0) rotate(180)")
+            .attr('x', barWidth-width/8-(width/8)/2)
+            .attr('y', function(d) { return 10 +ytext(d.y0)+ytext(d.y)+30;})
+            //.attr('x', -barEnerWidth-25)
+            //.attr('y', function(d) {return  22+(yavg(d.y0))-25;})
+            //.attr("transform","translate(0,0) rotate(180)")
             .attr('class', 'label_ct105_bar')
             .attr('style', 'fill: white')
             .attr("text-anchor", "middle")
@@ -387,7 +443,10 @@ var Empowering = {};
             .attr('class', 'icons')
             .attr('style', 'font: ' + parseInt(width / 8) + 'px FontAwesome;' +
                             'text-anchor: start')
-            .attr("transform", "translate("+(45)+","+-barHeight+") rotate(180)")
+            .style("fill", function(d, i) { return cons_color(length); })
+            .attr('x', rectWidth+barEnerWidth+25+5)
+            .attr('y', 20)
+            //.attr("transform", "translate("+(45)+","+(-barHeight+25)+") rotate(180)")
             .text(icons[1]);
 
         ///Left chart
@@ -395,41 +454,56 @@ var Empowering = {};
             .attr('class', 'icons')
             .attr('style', 'font: ' + parseInt(width / 8) + 'px FontAwesome;' +
                             'text-anchor: end')
-            .attr("transform", "translate("+(barWidth)+","+-barHeight+") rotate(180)")
+            .style("fill", function(d, i) { return avg_color(length); })
+            .attr('x', rectWidth-30)
+            .attr('y', 20)
+            //.attr("transform", "translate("+(barWidth)+","+(-barHeight+25)+") rotate(180)")
             .text(icons[0]);
 
         ///LINE BETWEEEN CHART AND ICON
         ///Right chart
         cons_bar.append("rect")
             .attr("class", "line")
+            .attr("x", rectWidth+barEnerWidth-100) 
+            .attr("y", 20)
             .attr("width", rectWidth+barEnerWidth-10)
             .attr("height", 2)
-            .attr("transform", "translate("+(barWidth-15-10)+","+-barHeight+") rotate(180)")
+            .style("fill", function(d, i) { return cons_color(length); })
+            //.attr("transform", "translate("+(barWidth-15-10)+","+(-barHeight)+") rotate(180)")
             .style("stroke-width", "1px");
         
         ///Left chart
         avg_bar.append("rect")
             .attr("class", "line")
+            .attr("x", 10) 
+            .attr("y", 20)
             .attr("width", rectWidth+barEnerWidth-10)
             .attr("height", 2)
-            .attr("transform", "translate("+(barWidth+50-10)+","+-barHeight+") rotate(180)")
+            .style("fill", function(d, i) { return avg_color(length); })
+            //.attr("transform", "translate("+(barWidth+50-10)+","+(-barHeight+yavg(ya_varois)-10)+") rotate(180)")
             .style("stroke-width", "1px");
 
         ///LABEL TEXTS
         ///Right chart
         cons_bar.append('text')
         .attr("text-anchor", "middle")
+            .attr('x', barWidth/2+24)
+            .attr('y', 65)
             .attr('class', 'label')
             .attr('style', 'font-size: ' + labelSize + 'px')
-            .attr("transform", "translate("+(barWidth-65)+","+(-barHeight-40)+") rotate(180)")
+            .style("fill", function(d, i) { return cons_color(length); })
+            //.attr("transform", "translate("+(barWidth-65)+","+(-barHeight-40+25)+") rotate(180)")
             .text(labels[1]);
 
         ///Left chart
         avg_bar.append('text')
         .attr("text-anchor", "middle")
+            .attr('x', barWidth/2+20)
+            .attr('y', 65)
             .attr('class', 'label')
             .attr('style', 'font-size: ' + labelSize + 'px')
-            .attr("transform", "translate("+(barWidth-85)+","+(-barHeight-40)+") rotate(180)")
+            .style("fill", function(d, i) { return avg_color(length); })
+            //.attr("transform", "translate("+(barWidth-85)+","+(-barHeight-40)+") rotate(180)")
             .text(labels[0]);
  
         return ct105;
@@ -1935,7 +2009,8 @@ var Empowering = {};
         ///***Definition of scales for the three axis. For the x, width is limited in order to define 
         ///a stroke between bars e.g. ".3" establishes the stroke by barWitdh-30%***
         var x = d3.scale.ordinal().rangeRoundBands([0, width], .3);
-        //var x = d3.time.scale().range([0, width]); //without stroke between bars
+        //var x0 = d3.time.scale().range([0, width]); //without stroke between bars
+        //var x = d3.scale.ordinal();
         var y = d3.scale.linear().range([height, 0]);
         var y0 = d3.scale.linear().range([height, 0]);
 
@@ -1943,6 +2018,7 @@ var Empowering = {};
         data.forEach(function(d) {
             d.month = parseDate(d.month + "");
             d.consumption = +d.consumption;
+            d.averageConsumption = +d.averageConsumption
             d.temperature = +d.temperature;
         });
 
@@ -1950,6 +2026,7 @@ var Empowering = {};
         ///values for min and max domains depending on each climate area
         ///e.g. min 5 and max 30***
         x.domain(data.map(function(d) { return d.month; })); //x.domain(d3.extent(data, function(d) { return d.month; })); //other way to define
+        //x.domain().rangeRoundBands([0, x0.rangeBand()]);
         y.domain([0, 50+d3.max(data, function(d) { return d.consumption; })]); //y.domain([0, 200]); //other way to define
         y0.domain([
             (d3.min(data, function(d) { return d.temperature; }) <= 5) ? true : 5,
@@ -1965,6 +2042,7 @@ var Empowering = {};
             .tickFormat(locale.timeFormat("%b %y"))
             .ticks(d3.min([12, data.length])); //.ticks(d3.time.years, 2); //other way to define
         var yAxisLeft = d3.svg.axis().scale(y).orient("left").ticks(5);
+
         var yAxisRight = d3.svg.axis().scale(y0).orient("right").ticks(5);
 
         ///***Definition of secondary chart environment: line chart***
