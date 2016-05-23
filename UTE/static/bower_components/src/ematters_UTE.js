@@ -518,33 +518,10 @@ var Empowering = {};
             attrs.data = JSON.parse(attrs.data);
         }
 
-        /*
-        Some calculated metadata for OT302A
-        */
+        var dataIn = attrs.data["monthlyStats"];
+        console.log("conss",dataIn);
 
-        var removeByAttr = function(arr, attr, value){
-          var i = arr.length;
-          while(i--){
-            if( arr[i] 
-              && arr[i].hasOwnProperty(attr) 
-              && (arguments.length > 2 && arr[i][attr] === value ) ){ 
-
-              arr.splice(i,1);
-
-            }
-          } 
-          return arr;
-        }
-
-        /*var types =
-            ['Supervalley',
-            'Valley',
-            'Peak'
-        ];*/
-
-        var arr = attrs.data["dailyStats"];
-
-        removeByAttr(arr, "timeSlot", "total");    
+        //removeByAttr(arr, "timeSlot", "total");    
         
         /*
         Definition of time formats
@@ -552,35 +529,44 @@ var Empowering = {};
 
         var parseDate = d3.time.format('%Y%m').parse;
 
-        /*
-        Data restructuration
-        */
-
-        var nested = d3.nest()
-          .key(function(d) {return d.day;})
-          .key(function(d) {return d.timeSlot;})
-          //.sortKeys(d3.ascending)
-          .rollup(function(leaves) { 
-            return {
-              //"length": leaves.length, 
-              "cons": d3.sum(leaves, function(d) {return parseFloat(d.consumption);
-              })
-            } 
-          })
-          .entries(arr);
+        ///***Preparation for data selection***
+        dataIn.forEach(function(d) {
+            d.month = parseDate(d.month + "");
+        });
 
         /*
         Definition of chart environment
         */
-
+        /*var margin = {top: 20, right: 20, bottom: 30, left: 40},
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;*/
         var margin = {top: 50, right: 20, bottom: 20, left: 30},
             width  = 672 - margin.left - margin.right, //Default: 1000-margin-left-margin-right
             height = 336  - margin.top  - margin.bottom; //Default: 500-margin.top-margin-bottom
-
-        var color = d3.scale.ordinal()
-            .range(["#161686","#3278C2","#AECCEC"]);
-
-        console.log("color",color)
+         
+        var x0 = d3.scale.ordinal()
+            .rangeRoundBands([0, width], 0.1);
+         
+        var x1 = d3.scale.ordinal();
+         
+        var y = d3.scale.linear()
+            .range([height, 0]);
+         
+        var xAxis = d3.svg.axis()
+            .scale(x0)
+            .orient("bottom");
+         
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left")
+            .tickFormat(d3.format(".2s"));
+         
+        /*var color = d3.scale.ordinal()
+            .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);*/
+        //var color = d3.scale.ordinal()
+        //    .range(["#161686","#3278C2","#AECCEC"]);
+        var color = d3.scale.ordinal().range(["#161686", "#3278C2", "#AECCEC","#FE733A", "#ED933D", "#F6CF9F"]);
+        //var avg_color = d3.scale.ordinal().range(["#FE733A", "#ED933D", "#F6CF9F"]);
 
         var svg = d3.select(attrs.container)
                    .append('div')
@@ -593,267 +579,112 @@ var Empowering = {};
                    .classed("svg-content-responsive", true)
                    .append("g")
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-        //Sorting data to be represented
-        var processed_data = nested.map( function (d) {
-            var return_object = 0;
-            var y0 = 0;
-            var total = 0;
-            return {
-                date: d.key,
-                values: (d.values).map( function (d, i) {
-                    return_object = {
-                        tariff: d.key,
-                        consumption: d.values.cons,
-                        y0: y0,
-                        y1: y0 + d.values.cons
-                    };
-                    y0 = y0 + d.values.cons;
-                    total = total + d.values.cons;
-                  return return_object;
-                  }),
-                total: total
-            };
-        });
-
-
-
-        // Define the color domain:
-        var tariffs = [];
-
-        processed_data.forEach(
-            function (d) {
-                d.date = parseDate(d.date),
-                d.values.forEach(
-                    function(d) {
-                        if (!(tariffs.indexOf(d.tariff) > -1)) {
-                            console.log("tariff", d.tariff)
-                                    console.log("get",d)
-                            tariffs.push(d.tariff)
-                        }
-                    }
-                ) 
-            }
-        );
-        color.domain(tariffs);
-
-        var types =  attrs.types || {
-            0: 'Supervalley',
-            1: 'Valley',
-            2: 'Peak'
+        /*var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");*/
+         
+        var yBegin;
+         
+        var innerColumns = {
+          "column1" : ["p1_cons","p2_cons","p3_cons"],
+          "column2" : ["p1_avg","p2_avg","p3_avg"]
         };
+        console.log("inner",innerColumns);
 
-        /*var replace = function (d) {
-          if  (d === "rot" )
-            {return types[0]}
-          //else remove(d)
-        };*/
-
-        var replaceTarname = function (d) {
-          if  ( d === "grün")
-            {return types[0]}
-          if ( d === "gelb")
-            {return types[1]}
-          if ( d === "rot")
-            {return types[2]}
-        };
-
-        console.log("tar",tariffs[0]);
-        //console.log("tar0",processed_data.values.tariff[0])
-        //console.log("tar1",processed_data[d].values);
-
-        ///Labels from the origin or from the HTML template (prioritized over origin):
-        ///Each label is refered to a position 0,1,2... without limitation for introducing it
-        function getname(name) {
-                    //var i = name.length;
-                    console.log("len",name.length);
-                    var Rates = {
-                    0: 'e',
-                    1: 'o',
-                    2: 't',
-                    };
-
-
-                    if (name==='string') {
-                      //name[i]===Rates[i];
-                      return name===Rates[0];
-                    }
-
-                    //return Rates;
-                  };
-
-   
-
-        /*var removeByAttr = function(arr, attr, value){
-          var i = arr.length;
-          while(i--){
-            if( arr[i] 
-              && arr[i].hasOwnProperty(attr) 
-              && (arguments.length > 2 && arr[i][attr] === value ) ){ 
-
-              arr.splice(i,1);
-
-            }
-          }
-          return arr;
-        }*/
-        //console.log("func",func(tariffs));
-
-        var tarname = [];
-        processed_data.forEach(function(d,i) {tarname.push(d.tariff);});
-        console.log("dar",processed_data)
-        console.log("da",tarname)
-
-
-        //var types = attrs.types || tarname;
-
-
-
-
-        var poplabels = attrs.poplabels || {
-            0: 'Tariff',
-            1: 'Consumption',
-        };
-
-
-        // helper function for applying d3.time.scale instead of the default d3.ordinales.scale
-        function getDate(d) {
-            return new Date(d.date);
-        }
-
-        // get max and min dates - this assumes data is sorted
-        var minDate = getDate(processed_data[0]),
-            maxDate = getDate(processed_data[processed_data.length-1]);
-
-        var x = d3.time.scale()
-        .domain([minDate, maxDate])
-        .range([0, width]);
-
-        var y = d3.scale.linear()
-        .domain([0, d3.max(processed_data, function(d) { return d.total+1; })])
-        .rangeRound([height, 0]);
-
-        var xAxis = d3.svg.axis()
-            .scale(x)
-            .orient("bottom")
-            .tickFormat(d3.time.format('%m'))
-            .ticks(processed_data.length);
-            //.ticks(5);
-
-        var yAxis = d3.svg.axis()
-            .scale(y)
-            .orient("left")
-            //.tickFormat(d3.format(".2s"))
-            .ticks(5);
-
-          ///***Definition of function for grid lines: Vertical and Horitzontal***
-          function make_V_grid() {
-              return d3.svg.axis()
-                  .scale(x)
-                  .orient("bottom")
-                  .ticks(5)
-          }
-          function make_H_grid() {
-              return d3.svg.axis()
-                  .scale(y)
-                  .orient("left")
-                  .ticks(5);
-          }
-
-          ///***Drawing the grid lines***
-          ///VERTICAL
-          /*svg.append("g")
-              .attr("class", "grid")
-              .attr("transform", "translate(0," + height + ")")
-              .call(make_V_grid()
-                  .tickSize(-height, 0, 0)
-                  .tickFormat("")
-              )*/
-          ///HORITZONTAL   
-          svg.append("g")
-              .attr("class", "x axis")
-              .call(make_H_grid()
-                  .tickSize(-(width/processed_data.length)*(processed_data.length+1))//(-width, 0, 0)
-                  .tickFormat(""));
-
-          svg.append("g")
-              .attr("class", "x axis")
-              //.attr("transform", "translate(0," + height + ")")
-              .attr("transform", "translate(" + (width/processed_data.length)/2 + "," + height + ")")
-              .call(xAxis)
-                .selectAll("text")  
-                .style("font-size", "58%")
-                //.style("font-weight", "bold")
-                .style("text-anchor", "middle");      
-
-          svg.append("g")
-              .attr("class", "y axis")
-              .call(yAxis)
-              .style("font-size", "66%")
-              //.style("font-weight", "bold")
-              .style("text-anchor", "start") 
-              .append("text")
-                .style("font-size", "112%")
-                .style("text-transform", "uppercase")
-                .attr('dy', '-2.05em')
-                .attr('dx', '-1.35em')
-                .text(attrs.labels || "consumption");
-
-          svg.append("g")
-              .attr("class", "y axis")
-              //.call(yAxis)
-              .append("text")
-                //.attr("transform", "rotate(-90)")
-                //.attr("y", 6)
-                .attr("dy", "-1.1em")
-                .attr('dx', '-1.5em')       
-                .style("font-size", "66%")
-                //.style("font-weight", "bold")
-                .style("text-anchor", "start")
-                .text(attrs.units || "kWh/month");
-
-          var selection = svg.selectAll(".selection")
-              .data(processed_data)
-            .enter().append("g")
-              .attr("class", "selection")
-              //.attr("transform", function (d) { return "translate(" + x(d.date) + ",0)"; });
-              .attr("transform", function (d) { return "translate(" + x(getDate(d)) + ",0)"; });
-
-          selection.selectAll("rect")
-            .data(function (d) { return d.values; })
-          .enter().append("rect")
-            .attr("width", width / processed_data.length)
-            //.attr("width", x.rangeBand())
-            //.attr("width", 20)
-            .attr("y", function (d) { return y(d.y1); })
-            .attr("height", function (d) { return y(d.y0) - y(d.y1); })
-            .style("fill", function (d) { return color(d.tariff); })
-            .style("stroke", "white")
-            .on("mouseover", function (d) { showPopover.call(this, d); })
-            .on("mouseout",  function (d) { removePopovers(); });
-
-          function removePopovers () {
-            $('.popover').each(function() {
-              $(this).remove();
-            }); 
-          }
-
-          function showPopover (d) {
-            $(this).popover({
-              title: d.name,
-              placement: 'auto top',
-              container: 'body',
-              trigger: 'manual',
-              html : true,
-              content: function() { 
-                //return poplabels[0] + ": " + d.tariff + "
-                                return poplabels[0] + ": " + replaceTarname(d.tariff) + //(tariff === 'string' ? tariffs[i] == types[i] : d.tariff) + 
-                //with labels: return "Tarifa: " + getLabels(d.tariff) +
-                       //"<br/>Consumption: " + d3.format(",")(d.value ? d.value: d.y1 - d.y0) + " kWh"; }
-                       "<br/>" + poplabels[1] + ": " + d3.round(d3.format(",")(d.value ? d.value: d.y1 - d.y0), 1) + " kWh"; }
+        var columnHeaders = d3.keys(dataIn[0]).filter(function(key) { return (key !== "month"); });
+        color.domain(d3.keys(dataIn[0]).filter(function(key) { return (key !== "month"); }));
+        console.log("headers",columnHeaders);
+        
+        dataIn.forEach(function(d) {
+            var yColumn = new Array();
+            d.columnDetails = columnHeaders.map(function(name) {
+              for (var ic in innerColumns) {
+                if($.inArray(name, innerColumns[ic]) >= 0){
+                  if (!yColumn[ic]){
+                    yColumn[ic] = 0;
+                  }
+                  yBegin = yColumn[ic];
+                  yColumn[ic] += +d[name];
+                  return {name: name, column: ic, yBegin: yBegin, yEnd: +d[name] + yBegin,};
+                }
+              }
             });
-            $(this).popover('show')
-          }
+            d.total = d3.max(d.columnDetails, function(d) { 
+              return d.yEnd; 
+            });
+          });
+        console.log("later",dataIn);
+
+ 
+  x0.domain(dataIn.map(function(d) { return d.month; }));
+  x1.domain(d3.keys(innerColumns)).rangeRoundBands([0, x0.rangeBand()]);
+ 
+  y.domain([0, d3.max(dataIn, function(d) { 
+    return d.total; 
+  })]);
+ 
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+ 
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".7em")
+      .style("text-anchor", "end")
+      .text("");
+ 
+  var project_stackedbar = svg.selectAll(".project_stackedbar")
+      .data(dataIn)
+    .enter().append("g")
+      .attr("class", "g")
+      .attr("transform", function(d) { return "translate(" + x0(d.month) + ",0)"; });
+ 
+  project_stackedbar.selectAll("rect")
+      .data(function(d) { return d.columnDetails; })
+    .enter().append("rect")
+      .attr("width", x1.rangeBand())
+      .attr("x", function(d) { 
+        return x1(d.column);
+         })
+      .attr("y", function(d) { 
+        return y(d.yEnd); 
+      })
+      .attr("height", function(d) { 
+        return y(d.yBegin) - y(d.yEnd); 
+      })
+      .style("fill", function(d) { return color(d.name); });
+ 
+  var legend = svg.selectAll(".legend")
+      .data(columnHeaders.slice().reverse())
+    .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+ 
+  legend.append("rect")
+      .attr("x", width - 18)
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", color);
+ 
+  legend.append("text")
+      .attr("x", width - 24)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(function(d) { return d; });
+ 
+
+ 
+
+
+
         return ct202a;
         };
 
@@ -866,29 +697,8 @@ var Empowering = {};
             attrs.data = JSON.parse(attrs.data);
         }
 
-        /*
-        Some calculated metadata for OT302B
-        */
-
-        var removeByAttr = function(arr, attr, value){
-          var i = arr.length;
-          while(i--){
-            if( arr[i] 
-              && arr[i].hasOwnProperty(attr) 
-              && (arguments.length > 2 && arr[i][attr] === value ) ){ 
-
-              arr.splice(i,1);
-
-            }
-          }
-          return arr;
-        }
-
-        var arr = attrs.data["summary"];
-
-        removeByAttr(arr, "timeSlot", "total");                   
-        //console.log("totaldata is", arr);
-
+        var dataIn = attrs.data["summary"];
+console.log("gg",dataIn)
         /*
         Definition of formats and widths
         */
@@ -902,78 +712,80 @@ var Empowering = {};
             percentageFormat = d3.format("%");
 
         /*
-        Data restructuration
-        */
+        Data restructuration*/
 
-        var removal = function (d) {
-          if  (d === "total" || d === "rot")
-            {return d}
-          else remove(d)
-        };
+        var cons = [dataIn[0]["p1_cons"],dataIn[0]["p2_cons"],dataIn[0]["p3_cons"]];
+console.log("hello",cons);
 
 
-        var nested = d3.nest()
-          .key(function(d) {return d.timeSlot;})
+        /*var nested = d3.nest()
+          .key(function(d) {return d.type;})
+          .key(function(d) {return d.consumption;})
           //.sortKeys(d3.ascending)
           .rollup(function(leaves) { 
             return {
               //"length": leaves.length, 
-              "cons": d3.sum(leaves, function(d) {return parseFloat(d.sum);
-              })
+              "cons": d3.sum(leaves, function(d) {return console.log("hello",d); parseFloat(d.p1_cons);}),
+                "cons": d3.sum(leaves, function(d) {return parseFloat(d.p2_cons);})
             } 
           })
-          .entries(arr);
+          .entries(dataIn);*/
           //.entries(data);
+        var acum = cons.reduce(function(a,b) { return a+b; },0);
 
-        var acum = d3.sum(nested, function(d) { 
-                        return d.values.cons; 
+        /*var acum = d3.sum(nested, function(d) { 
+                        return d.cons; 
+                    });*/
+        var percentage =[];
+        cons.forEach(function(d,i) {
+                        percentage[i] = cons[i] / acum ;
                     });
 
-        nested.forEach(function(d) {
-                        d.percentage = d.values.cons / acum;
-                    });
-
+        console.log("hello",cons);
         /*
         Definition of chart environment
         */
 
         var vis = d3.select(attrs.container)
             .append("svg:svg")              //create the SVG element inside the <body>
-            .data([nested])                  //associate our data with the document
+            .data([percentage])                  //associate our data with the document
                 .attr("width", w)           //set the width and height of our visualization (these will be attributes of the <svg> tag
                 .attr("height", h)
             .append("svg:g")                //make a group to hold our pie chart
                 .attr("transform", "translate(" + r + "," + r + ")")    //move the center of the pie chart from 0, 0 to radius, radius
+        console.log("datain",dataIn[0]);
 
         var arc = d3.svg.arc()              //this will create <path> elements for us using arc data
             .outerRadius(r);
 
         var pie = d3.layout.pie()
-            .value(function(d) { return d.percentage; });
+            .value(function(d,i) { console.log("per",percentage); return percentage[i]; });
+            //.value(percentage);
+
 
         var arcs = vis.selectAll("g.slice")     //this selects all <g> elements with class slice (there aren't any yet)
             .data(pie)                          //associate the generated pie data (an array of arcs, each having startAngle, endAngle and value properties) 
             .enter()                            //this will create <g> elements for every "extra" data element that should be associated with a selection. The result is creating a <g> for every object in the data array
                 .append("svg:g")                //create a group to hold each slice (we will have a <path> and a <text> element associated with each slice)
-                    .attr("class", "slice")    //allow us to style things in the slices (like text)
-                    .on("mouseover", function (d) { 
+                    .attr("class", "slice") ;   //allow us to style things in the slices (like text)
+                    //.on("mouseover", function (d) { 
                       //console.log("d is", d);
-                      showPopover.call(this, d.data); })
-                    .on("mouseout",  function (d) { removePopovers(); });
+                     // showPopover.call(this, d.data); })
+                    //.on("mouseout",  function (d) { removePopovers(); });
 
         ///Labels from the origin or from the HTML template (prioritized over origin):
         ///Each label is refered to a position 0,1,2... without limitation for introducing it
-        var tarname = [];
-        nested.forEach(function(d) {tarname.push(d.key);});
+        /*var tarname = [];
+        nested.forEach(function(d) {tarname.push(d.key);});*/
 
-        var types = attrs.types || tarname;
+        var types = attrs.types;// || tarname;
 
         var poplabels = attrs.poplabels || {
             0: 'Percentage',
             1: 'Consumption',
         };
 
-        function removePopovers () {
+        /*function removePopovers () {
             $('.popover').each(function() {
               $(this).remove();
             }); 
@@ -1006,7 +818,7 @@ var Empowering = {};
                        "<br/>"+ poplabels[1] + ": " + d3.round(d.values.cons, 1) + " kWh"}
             });
             $(this).popover('show')
-          }
+          }*/
 
             arcs.append("svg:path")
                     .attr("fill", function(d, i) { return color(i); } )
@@ -1050,9 +862,9 @@ var Empowering = {};
                 .style("font-weight","bold") 
                 .attr("dx", "0em")
                 .attr("dy", "0.7em")                      //center the text on it's origin
-                .text(function(d) { 
+                .text(function(d,i) { 
                 //return d.data.key; //get the label from our original data array
-                return percentageFormat(d.data.percentage);
+                return percentageFormat(percentage[i]);
                 });   
 
 
@@ -1062,34 +874,13 @@ var Empowering = {};
 
     Empowering.Graphics.CT202B_AVG = function(attrs) {
 
-        var ct202b_avg = {};
+          var ct202b_cons = {};
         if (typeof attrs.data === 'string') {
             attrs.data = JSON.parse(attrs.data);
         }
 
-        /*
-        Some calculated metadata for OT302B
-        */
-
-        var removeByAttr = function(arr, attr, value){
-          var i = arr.length;
-          while(i--){
-            if( arr[i] 
-              && arr[i].hasOwnProperty(attr) 
-              && (arguments.length > 2 && arr[i][attr] === value ) ){ 
-
-              arr.splice(i,1);
-
-            }
-          }
-          return arr;
-        }
-
-        var arr = attrs.data["summary"];
-
-        removeByAttr(arr, "timeSlot", "total");                   
-        //console.log("totaldata is", arr);
-
+        var dataIn = attrs.data["summary"];
+console.log("gg",dataIn)
         /*
         Definition of formats and widths
         */
@@ -1099,82 +890,84 @@ var Empowering = {};
             //r = 75,                          //radius, default: 100
             r = Math.min(w, h) / 2,
             color = d3.scale.ordinal()
-            .range(["#FE733A","#ED933D", "#F6CF9F"]),
+            .range(["#FE733A", "#ED933D", "#F6CF9F"]),
             percentageFormat = d3.format("%");
 
         /*
-        Data restructuration
-        */
+        Data restructuration*/
 
-        var removal = function (d) {
-          if  (d === "total" || d === "rot")
-            {return d}
-          else remove(d)
-        };
+        var cons = [dataIn[1]["p1_avg"],dataIn[1]["p2_avg"],dataIn[1]["p3_avg"]];
+console.log("hello",cons);
 
 
-        var nested = d3.nest()
-          .key(function(d) {return d.timeSlot;})
+        /*var nested = d3.nest()
+          .key(function(d) {return d.type;})
+          .key(function(d) {return d.consumption;})
           //.sortKeys(d3.ascending)
           .rollup(function(leaves) { 
             return {
               //"length": leaves.length, 
-              "cons": d3.sum(leaves, function(d) {return parseFloat(d.sum);
-              })
+              "cons": d3.sum(leaves, function(d) {return console.log("hello",d); parseFloat(d.p1_cons);}),
+                "cons": d3.sum(leaves, function(d) {return parseFloat(d.p2_cons);})
             } 
           })
-          .entries(arr);
+          .entries(dataIn);*/
           //.entries(data);
+        var acum = cons.reduce(function(a,b) { return a+b; },0);
 
-        var acum = d3.sum(nested, function(d) { 
-                        return d.values.cons; 
+        /*var acum = d3.sum(nested, function(d) { 
+                        return d.cons; 
+                    });*/
+        var percentage =[];
+        cons.forEach(function(d,i) {
+                        percentage[i] = cons[i] / acum ;
                     });
 
-        nested.forEach(function(d) {
-                        d.percentage = d.values.cons / acum;
-                    });
-
+        console.log("hello",cons);
         /*
         Definition of chart environment
         */
 
         var vis = d3.select(attrs.container)
             .append("svg:svg")              //create the SVG element inside the <body>
-            .data([nested])                  //associate our data with the document
+            .data([percentage])                  //associate our data with the document
                 .attr("width", w)           //set the width and height of our visualization (these will be attributes of the <svg> tag
                 .attr("height", h)
             .append("svg:g")                //make a group to hold our pie chart
                 .attr("transform", "translate(" + r + "," + r + ")")    //move the center of the pie chart from 0, 0 to radius, radius
+        console.log("datain",dataIn[0]);
 
         var arc = d3.svg.arc()              //this will create <path> elements for us using arc data
             .outerRadius(r);
 
         var pie = d3.layout.pie()
-            .value(function(d) { return d.percentage; });
+            .value(function(d,i) { console.log("per",percentage); return percentage[i]; });
+            //.value(percentage);
+
 
         var arcs = vis.selectAll("g.slice")     //this selects all <g> elements with class slice (there aren't any yet)
             .data(pie)                          //associate the generated pie data (an array of arcs, each having startAngle, endAngle and value properties) 
             .enter()                            //this will create <g> elements for every "extra" data element that should be associated with a selection. The result is creating a <g> for every object in the data array
                 .append("svg:g")                //create a group to hold each slice (we will have a <path> and a <text> element associated with each slice)
-                    .attr("class", "slice")    //allow us to style things in the slices (like text)
-                    .on("mouseover", function (d) { 
+                    .attr("class", "slice") ;   //allow us to style things in the slices (like text)
+                    //.on("mouseover", function (d) { 
                       //console.log("d is", d);
-                      showPopover.call(this, d.data); })
-                    .on("mouseout",  function (d) { removePopovers(); });
+                     // showPopover.call(this, d.data); })
+                    //.on("mouseout",  function (d) { removePopovers(); });
 
         ///Labels from the origin or from the HTML template (prioritized over origin):
         ///Each label is refered to a position 0,1,2... without limitation for introducing it
-        var tarname = [];
-        nested.forEach(function(d) {tarname.push(d.key);});
+        /*var tarname = [];
+        nested.forEach(function(d) {tarname.push(d.key);});*/
 
-        var types = attrs.types || tarname;
+        var types = attrs.types;// || tarname;
 
         var poplabels = attrs.poplabels || {
             0: 'Percentage',
             1: 'Consumption',
         };
 
-        function removePopovers () {
+        /*function removePopovers () {
             $('.popover').each(function() {
               $(this).remove();
             }); 
@@ -1207,7 +1000,7 @@ var Empowering = {};
                        "<br/>"+ poplabels[1] + ": " + d3.round(d.values.cons, 1) + " kWh"}
             });
             $(this).popover('show')
-          }
+          }*/
 
             arcs.append("svg:path")
                     .attr("fill", function(d, i) { return color(i); } )
@@ -1251,10 +1044,11 @@ var Empowering = {};
                 .style("font-weight","bold") 
                 .attr("dx", "0em")
                 .attr("dy", "0.7em")                      //center the text on it's origin
-                .text(function(d) { 
+                .text(function(d,i) { 
                 //return d.data.key; //get the label from our original data array
-                return percentageFormat(d.data.percentage);
+                return percentageFormat(percentage[i]);
                 });   
+
 
 
         return ct202b_avg;
@@ -1566,10 +1360,10 @@ var Empowering = {};
 
         ///Labels from the origin or from the HTML template (prioritized over origin):
         ///Each label is refered to a position 0,1,2... without limitation for introducing it
-        var tarname = [];
-        nested.forEach(function(d) {tarname.push(d.key);});
+        /*var tarname = [];
+        nested.forEach(function(d) {tarname.push(d.key);});*/
 
-        var types = attrs.types || tarname;
+        var types = attrs.types;
 
         var poplabels = attrs.poplabels || {
             0: 'Percentage',
@@ -1671,44 +1465,8 @@ var Empowering = {};
         }
         var data = attrs.data;
 
-        /*
-        Some calculated metadata for OT103
-        */
-
-        /*ct409.getDiffConsumption = function() {
-            var eff = 0;
-            var med = 0;
-            var consumption_last12month = d3.sum(data, function(d) {
-                return d.consumption;
-            });
-            var avgConsumption_last12month = d3.sum(data, function(d) {
-                if (d.consumption !== null) {
-                    return d.averageConsumption;
-                }
-            });
-            var avgEffConsumption_last12month = d3.sum(data, function(d) {
-                if (d.consumption !== null) {
-                    return d.averageEffConsumption;
-                }
-            });
-            var consumption_last3month = d3.sum(data.slice(length-3,length[length]), function(d) {
-                return d.consumption;
-            });
-            var avgConsumption_last3month = d3.sum(data.slice(length-3,length[length]), function(d) {
-                if (d.consumption !== null) {
-                    return d.averageConsumption;
-                }
-            });
-            var avgEffConsumption_last3month = d3.sum(data.slice(length-3,length[length]), function(d) {
-                if (d.consumption !== null) {
-                    return d.averageEffConsumption;
-                }
-            });
-
-            eff = parseFloat(((avgEffConsumption_last3month-consumption_last3month)/(consumption_last12month) * 100).toFixed(2));
-            med = parseFloat(((avgConsumption_last3month-consumption_last3month)/(consumption_last12month) * 100).toFixed(2));
-            return {eff: eff, med: med};
-        };*/
+        var linedataUpper = data[0].cosFiUpper;
+        var linedataLower = data[0].cosFiLower;
 
         /*
         Definition of chart environment 
@@ -1735,27 +1493,32 @@ var Empowering = {};
 
         ///***Definition of scales for the two axis***
         var x = d3.time.scale().range([0, width]);
-        var y = d3.scale.linear().range([height, 0]);
+        var y = d3.scale.linear().range([height-50, 0]);
 
         ///***Preparation for data selection***
         var allCons = [];
-        var consumption = [];
-        var averageConsumption = [];
-        //var averageEffConsumption = [];
+        var cosFiConsumption = [];
+        var cosFiAverageConsumption = [];
+        var cosFiLower = [];
+        var cosFiUpper = [];
 
         data.forEach(function(d) {
             d.month = parseDate(d.month + '');
-            if (d.consumption !== null) {
-                consumption.push(d);
+            if (d.cosFiConsumption !== null) {
+                cosFiConsumption.push(d);
             }
-            if (d.averageConsumption !== null) {
-                averageConsumption.push(d);
+            if (d.cosFiAverageConsumption !== null) {
+                cosFiAverageConsumption.push(d);
             }
-            //if (d.averageEffConsumption !== null) {
-            //    averageEffConsumption.push(d);
-            //}
+            if (d.cosFiLower !== null) {
+                cosFiLower.push(d);
+            }
+            if (d.cosFiUpper !== null) {
+                cosFiUpper.push(d);
+            }
+
             allCons.push(
-                d.consumption, d.averageConsumption//,d.averageEffConsumption
+                d.cosFiConsumption, d.cosFiAverageConsumption, d.cosFiLower, d.cosFiUpper
             );
         });
 
@@ -1777,15 +1540,27 @@ var Empowering = {};
         ///***Definition of multiline chart***
         var line = d3.svg.line()
             .x(function(d) { return x(d.month); })
-            .y(function(d) { return y(d.consumption); });
-
-        /*var lineAvgEff = d3.svg.line()
-            .x(function(d) { return x(d.month); })
-            .y(function(d) { return y(d.averageEffConsumption); });*/
+            .y(function(d) { return y(d.cosFiConsumption); });
 
         var lineAvg = d3.svg.line()
             .x(function(d) { return x(d.month); })
-            .y(function(d) { return y(d.averageConsumption); });
+            .y(function(d) { return y(d.cosFiAverageConsumption); });
+
+        ///***Definition of legend***
+        var labels = attrs.labels || {
+            0: 'Your neighbors',
+            1: 'You',
+        };
+
+        var styles = {
+          0: 'cosFiAverageConsumption',
+          1: 'cosFiConsumption',
+
+        };
+
+        var poplabels = attrs.poplabels || {
+            0: 'Consumption'
+        };
 
         ///***Definition of style for the two axis***
         ///xAxis
@@ -1798,27 +1573,14 @@ var Empowering = {};
             .attr('class', 'y axis')
             .call(yAxis)
             .append('text')
-              .attr('transform', 'rotate(-90)')
-              .attr('y', 6)
+              //.attr('transform', 'rotate(-90)')
+              .attr('x', 0)
+              .attr('y', -5)
               .attr('dy', '.71em')
               .style('text-anchor', 'end')
-              .text('cosY');
+              .text(poplabels[0]);
 
-        ///***Definition of legend***
-        var labels = attrs.labels || {
-            0: 'Your neighbors',
-            1: 'You',
-        };
 
-        var styles = {
-          0: 'averageConsumption',
-          1: 'consumption',
-
-        };
-
-        var poplabels = attrs.poplabels || {
-            0: 'Consumption'
-        };
 
         ///VISUALIZATION FOR THE TEXT
         [0, 1, 2].forEach(function(idx) {
@@ -1879,35 +1641,125 @@ var Empowering = {};
             .on("mouseout",  function (d) { removePopovers(); });*/
 
         svg.append('path')
-            .datum(averageConsumption)
+            .datum(cosFiAverageConsumption)
             .attr('class', 'line averageConsumption')
             .attr('d', lineAvg);
 
         svg.selectAll('.ot103')
-            .data(averageConsumption).enter()
+            .data(cosFiAverageConsumption).enter()
             .append('circle')
             .attr('class', 'point averageConsumption')
             .attr('cx', function(d) { return x(d.month); })
-            .attr('cy', function(d) { return y(d.averageConsumption); })
+            .attr('cy', function(d) { return y(d.cosFiAverageConsumption); })
             .attr('r', 6)
             .on("mouseover", function (d) { showPopoverLineAvg.call(this, d); })
             .on("mouseout",  function (d) { removePopovers(); });
 
         svg.append('path')
-            .datum(consumption)
+            .datum(cosFiConsumption)
             .attr('class', 'line consumption')
             .attr('d', line);
 
         svg.selectAll('.ot103')
-            .data(consumption).enter()
+            .data(cosFiConsumption).enter()
             .append('circle')
             .attr('class', 'point consumption')
             .attr('cx', function(d) { return x(d.month); })
-            .attr('cy', function(d) { return y(d.consumption); })
+            .attr('cy', function(d) { return y(d.cosFiConsumption); })
             .attr('r', 8)
             .on("mouseover", function (d) { showPopoverLine.call(this, d); })
             .on("mouseout",  function (d) { removePopovers(); });
 
+        ///*********///
+        ///***Definition of secondary chart environment: line chart***
+        /*var line = d3.svg.line()
+            .x(width)//.x(function(d) { return x(d); })
+            .y(function(d) { return y(d); });
+            //.interpolate("cardinal")
+            //.tension(0.6);*/
+
+
+
+        svg.append("line")
+            .attr("x1", 0)
+            .attr("x2", width)
+            .attr("y1", y(linedataLower))
+            .attr("y2", y(linedataLower))
+            .style("stroke", "red");
+
+        svg.append("line")
+            .attr("x1", 0)
+            .attr("x2", width)
+            .attr("y1", y(linedataUpper))
+            .attr("y2", y(linedataUpper))
+            .style("stroke", "orange");
+
+        svg.append("text")
+            .attr("class", "y axis")
+            //.style("font-size", "61%")
+            .style("fill", "red")
+            .attr("transform", "translate(" + -40.5 + ","+(y(linedataLower)*1.02)+")")
+            .style("text-anchor", "start")
+            .text(linedataLower);
+
+        svg.append("text")
+            .attr("class", "y axis")
+            //.style("font-size", "61%")
+            .style("fill", "orange")
+            .attr("transform", "translate(" + -40.5 + ","+(y(linedataUpper)*1.06)+")")
+            .style("text-anchor", "start")
+            .text(linedataUpper);
+
+        /*svg.append("line")
+        .style("stroke", "black")
+        .attr("x1", 0)
+        .attr("y1", line(100))
+        .attr("x2", width)
+        .attr("y2", line(100));*/
+
+        ///***Introducing data in the secondary environment: line chart***
+        /*svg.append("path") //line path
+            .datum(0.04)
+            .style("stroke", "black")
+            .attr("transform", "translate(" + 0 + ",0)") //.attr("transform", function (d) { return "translate(" + x(d.month) + "10,0)"; }) //other way to define
+            .attr("d", line(0.04));*/
+
+
+        /*svg.append("text")
+            .attr("class", "y axis")
+            .style("font-size", "61%")
+            .attr("transform", "translate(" + (width/2+100) + ","+(height+19)+")")
+            .style("text-anchor", "start")
+            .text(labels[0]);
+
+        svg.append("line")
+    .style("stroke", "black")
+    .attr("x1", 0)
+    .attr("y1", y(0.07))
+    .attr("x2", width)
+    .attr("y2", y(0.07));*/
+
+        ///VISUALIZATION FOR LEGEND OF THE LINE CHART 
+        //BOTTOM
+        /*var legendLine = svg.append("rect")
+                .attr("class", "line temperature")
+                .attr("x", width/2.5+x.rangeBand()*2)
+                .attr("y", 0)
+                .attr("width", x.rangeBand())
+                .attr("height", 1)
+                .style("stroke-width", "0.5px");*/
+        ///UPPER
+        var legendLine = svg.append("rect")
+                .attr("class", "line temperature")
+                //.attr("x", width-155) //right xtreme
+                .attr("transform", "translate(" + (width/2+70)+ ","+(height+12)+")")
+                //.attr("x", width-265) 
+                //.attr("y", 25.5-margin.top)
+                .attr("width", 24)
+                .attr("height", 1)
+                .style("stroke-width", "1px");
+
+        //************///
         ///***Definition of functions for dynamisation of chart***
         ///WHEN NO OVER 
         function removePopovers () {
@@ -1925,7 +1777,7 @@ var Empowering = {};
           trigger: 'manual',
           html : true,
           content: function() { 
-            return  poplabels[0] + ": " + d3.round(d3.format(",")(d.averageConsumption), 1)+ " kWh";
+            return  poplabels[0] + ": " + d3.round(d3.format(",")(d.cosFiAverageConsumption), 1)+ " kWh";
             }
         });
         $(this).popover('show')
@@ -1939,7 +1791,7 @@ var Empowering = {};
           trigger: 'manual',
           html : true,
           content: function() { 
-            return  poplabels[0] + ": " + d3.round(d3.format(",")(d.consumption), 1)+ " kWh";
+            return  poplabels[0] + ": " + d3.round(d3.format(",")(d.cosFiConsumption), 1)+ " kWh";
             }
         });
         $(this).popover('show')
@@ -1982,10 +1834,32 @@ var Empowering = {};
         var margin = {top: 50, right: 28, bottom: 35, left: 40};
         var width = 672 - margin.left - margin.right;
         var height = 336 - margin.top - margin.bottom;
-
-        ///***Definition of primary chart environment: Bar chart***
         var barWidth = width / data.length;
 
+        ///***Definition of scales for the three axis. For the x, width is limited in order to define 
+        ///a stroke between bars e.g. ".3" establishes the stroke by barWitdh-30%***
+        var x0 = d3.scale.ordinal().rangeRoundBands([0, width], .3);
+        //var x0 = d3.time.scale().range([0, width]); //without stroke between bars
+        var x1 = d3.scale.ordinal();
+        var y = d3.scale.linear().range([height, 0]);
+        var y0 = d3.scale.linear().range([height-25, 0]);
+
+        var color = d3.scale.ordinal().range(["#161686", "#3278C2", "#AECCEC"]);
+
+        ///***Definition of selection for user language or predefined language***
+        var locale = Empowering.LOCALES[attrs.locale || "en_UK"];
+
+        ///***Definition of orientation and format for the three axis***
+        var xAxis = d3.svg.axis().scale(x0).orient("bottom")
+            .tickSize(5)
+            .tickFormat(locale.timeFormat("%b %y"));
+            //.ticks(d3.min([12, data.length])); //.ticks(d3.time.years, 2); //other way to define
+        var yAxisLeft = d3.svg.axis().scale(y).orient("left").ticks(5);
+
+        var yAxisRight = d3.svg.axis().scale(y0).orient("right").ticks(5);
+        //.tickFormat(d3.format(".2s"));
+
+         ///***Definition of primary chart environment: Bar chart***
         /*var svg = d3.select(attrs.container).append("svg")
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
@@ -2006,56 +1880,49 @@ var Empowering = {};
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
                     .attr("class", "ot503");
 
-        ///***Definition of scales for the three axis. For the x, width is limited in order to define 
-        ///a stroke between bars e.g. ".3" establishes the stroke by barWitdh-30%***
-        var x = d3.scale.ordinal().rangeRoundBands([0, width], .3);
-        //var x0 = d3.time.scale().range([0, width]); //without stroke between bars
-        //var x = d3.scale.ordinal();
-        var y = d3.scale.linear().range([height, 0]);
-        var y0 = d3.scale.linear().range([height, 0]);
-
         ///***Preparation for data selection***
         data.forEach(function(d) {
             d.month = parseDate(d.month + "");
-            d.consumption = +d.consumption;
-            d.averageConsumption = +d.averageConsumption
-            d.temperature = +d.temperature;
+            //d.consumption = +d.consumption;
+            //d.temperature = +d.temperature;
         });
+
+        var seriesNames = d3.keys(data[0]).filter(function(key) { 
+            //return (key === "consumption") && (key === "aconsumption"); });
+            return (key !== "month") && (key !== "saving"); });
+        console.log("seriesnames",seriesNames);
+        //alert(seriesNames);
+        data.forEach(function(d) {
+            d.Tariffs = seriesNames.map(function(name) { return {name: name, value: +d[name]}; });
+          });
+        console.log("names",data);
 
         ///***Definition of data domains: it is here necessary to define specific 
         ///values for min and max domains depending on each climate area
         ///e.g. min 5 and max 30***
-        x.domain(data.map(function(d) { return d.month; })); //x.domain(d3.extent(data, function(d) { return d.month; })); //other way to define
-        //x.domain().rangeRoundBands([0, x0.rangeBand()]);
-        y.domain([0, 50+d3.max(data, function(d) { return d.consumption; })]); //y.domain([0, 200]); //other way to define
-        y0.domain([
-            (d3.min(data, function(d) { return d.temperature; }) <= 5) ? true : 5,
-            (d3.max(data, function(d) { return d.temperature; })) >= 30 ? true : 30*1.1
-            ]); //y0.domain([0, 40]); //other way to define
+        x0.domain(data.map(function(d) { return d.month; })); //x.domain(d3.extent(data, function(d) { return d.month; })); //other way to define
+        x1.domain(seriesNames).rangeRoundBands([0, x0.rangeBand()]);
+        y.domain([0, (d3.max(data, function (d) { 
+            return d3.max(d.Tariffs, function (d) { return d.value; }); }))]);
+        /*y.domain([0, 50+d3.max(data, function(d) { 
+        return d3.max(d.Tariffs, function (d) { 
+        return d.value; }); }))]); //y.domain([0, 200]); //other way to define*/
+        /*y0.domain([
+            (d3.min(data, function(d) { return d.saving; }) <= 5) ? true : 5,
+            (d3.max(data, function(d) { return d.saving; })) >= 30 ? true : 30*1.1
+            ]); */
+        y0.domain([0,(d3.max(data, function (d) { 
+            return d3.max(d.Tariffs, function (d) { return d.value; }); })) +
+        (d3.max(data, function(d) { return d.saving; }))]); 
+            //y0.domain([0, 40]); //other way to define
         
-        ///***Definition of selection for user language or predefined language***
-        var locale = Empowering.LOCALES[attrs.locale || "en_UK"];
 
-        ///***Definition of orientation and format for the three axis***
-        var xAxis = d3.svg.axis().scale(x).orient("bottom")
-            .tickSize(5)
-            .tickFormat(locale.timeFormat("%b %y"))
-            .ticks(d3.min([12, data.length])); //.ticks(d3.time.years, 2); //other way to define
-        var yAxisLeft = d3.svg.axis().scale(y).orient("left").ticks(5);
 
-        var yAxisRight = d3.svg.axis().scale(y0).orient("right").ticks(5);
-
-        ///***Definition of secondary chart environment: line chart***
-        var line = d3.svg.line()
-            .x(function(d) { return x(d.month); })
-            .y(function(d) { return y0(d.temperature); })
-            .interpolate("cardinal")
-            .tension(0.6);
 
         ///***Definition of function for grid lines: Vertical and Horitzontal***
         function make_V_grid() {
             return d3.svg.axis()
-                .scale(x)
+                .scale(x0)
                 .orient("bottom")
                 .ticks(5)
         }
@@ -2066,19 +1933,94 @@ var Empowering = {};
                 .ticks(5);
         }
 
+        ///***Definition of legend***
+        ///LABELS FOR THE PRIMARY AND SECONDARY ENVIRONMENT
+        var labels = attrs.labels || {
+            0: 'tariff1',
+            1: 'tariff2',
+            2: 'tariff3',
+            4: 'saving'
+        };
+
+        var units = attrs.units || {
+            0: 'kWh/month',
+            1: 'ºC',
+        };
+
+        /*var seriesNames = attrs.seriesNames || {
+            0: 'tariff1',
+            1: 'tariff2',
+        };*/
+
         ///***Definition of style for the three axis***
         ///xAxis
         svg.append("g")
             .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")") //move to bottom
+            .attr("transform", "translate(0," + (height-25) + ")") //move to bottom
             .call(xAxis)
             .selectAll("text")
             .style("text-anchor", "end")
             .style("font-size", "41%")
             .attr("dx", "-.7em")
             .attr("dy", "0em")
+            .style("text-transform", "uppercase")
             .attr("transform", "rotate(-35)" );
+        
+        ///yAxisLeft
+        svg.append("g") 
+        .attr("class", "y axis")
+        .attr("transform", "translate(0,-25)") //move to left
+        .call(yAxisLeft)
+            .style("font-size", "58%")
+            //.style("font-weight", "bold")
+            .style("text-anchor", "start") ;
+            /*.append("text")
+            .style("font-size", "112%")
+            .style("text-transform", "uppercase")
+            .attr('dy', '-1.05em')
+            //.attr('dx', '4.8em') //left xtreme
+            .attr('dx', '9.7em')
+            .text(labels[0]);*/
 
+        svg.append("g") 
+        .attr("class", "y axis")
+        //.attr("transform", "translate(-5,0)") //move to left
+        //.call(yAxisLeft)
+            .append("text")
+            .attr("dy", "-2.4em")
+            .attr('dx', '-2.2em')       
+            .style("font-size", "66%")
+            //.style("font-weight", "bold")
+            .style("text-anchor", "start")
+            .text(units[0]);
+
+        ///legend for saving based on yAxisRight
+        svg.append("g") 
+        .attr("class", "y axis") 
+        .attr("transform", "translate(" + (width-5) + " ,0)") //move to right
+        .call(yAxisRight)
+            .style("font-size", "41%")
+            //.style("font-weight", "bold")
+            .style("text-anchor", "end") 
+            .append("text")
+            .style("font-size", "112%")
+            //.style("text-transform", "uppercase")
+            //.attr('dy', '-1.05em')
+            //.attr('dx', '1.5em') //right xtreme
+           // .attr('dx', '-12.4em')
+            //.text(labels[1]);
+
+        svg.append("g") 
+        .attr("class", "y axis") 
+        .attr("transform", "translate(" + (width) + " ,0)") //move to right
+        //.call(yAxisRight)
+            .append("text")
+            .attr("dy", "-2.4em")
+            .attr('dx', '0.2em')       
+            .style("font-size", "66%")
+            //.style("font-weight", "bold")
+            .style("text-anchor", "start")
+            .text(units[1]);
         ///***Drawing the grid lines***
         ///VERTICAL
         /*svg.append("g")
@@ -2096,138 +2038,56 @@ var Empowering = {};
                 .tickFormat(""));
 
         ///***Introducing data in the primary environment: bar chart***
-        svg.selectAll(".bar")
+        var grouped = svg.selectAll(".tariffs")
+            .data(data)
+        .enter().append("g")
+            .attr("class", "g")
+            .attr("transform", function (d) { return "translate(" + x0(d.month) + ",-25)"; });
+
+        //alert(JSON.stringify(d.Flights[0]));
+        grouped.selectAll("rect")
+            .data(function (d) { return d.Tariffs; })
+        .enter().append("rect")
+            .attr("width", x1.rangeBand())
+            .attr("x", function (d) { return x1(d.name); })
+            .attr("y", function (d) { return y(d.value); })
+            .attr("height", function (d) { return height - y(d.value); })
+            .style("fill", function (d) { return color(d.name); });
+
+        /*svg.selectAll(".bar")
             .data(data)
             .enter().append("rect")
-            .attr("class", "bar") //.style("stroke", "white") //when a stroke was not defined in the scales
-            .attr("x", function(d) { return x(d.month); })
-            .attr("width", x.rangeBand()) //.attr("width", barWidth) //other way to define
-            .attr("y", function(d) { return y(d.consumption); })
-            .attr("height", function(d) { return height - y(d.consumption); })
-            .on("mouseover", function (d) { showPopoverBar.call(this, d); })
-            .on("mouseout",  function (d) { removePopovers(); });
+            //.attr("class", "bar") //.style("stroke", "white") //when a stroke was not defined in the scales
+            .attr("x", function(d) { return x1(d.name); })
+            .attr("width", x1.rangeBand()) //.attr("width", barWidth) //other way to define
+            .attr("y", function(d) { return y(d.value); })
+            .attr("height", function(d) { return height - y(d.value); })
+            .style("fill", function (d) { return color(d.name); });*/
+
+            //.on("mouseover", function (d) { showPopoverBar.call(this, d); })
+            //.on("mouseout",  function (d) { removePopovers(); });
+
+        ///***Definition of secondary chart environment: line chart***
+        var line = d3.svg.line()
+            .x(function(d) { return x0(d.month); })
+            .y(function(d) { return y0(d.saving); });
+            //.interpolate("cardinal")
+            //.tension(0.6);
 
         ///***Introducing data in the secondary environment: line chart***
         svg.append("path") //line path
             .datum(data)
             .attr("class", "line temperature")
-            .attr("transform", "translate(" + barWidth/2*(1-0.3) + ",0)") //.attr("transform", function (d) { return "translate(" + x(d.month) + "10,0)"; }) //other way to define
+            .attr("transform", "translate(" + barWidth/(seriesNames.length) + ",0)") //.attr("transform", function (d) { return "translate(" + x(d.month) + "10,0)"; }) //other way to define
             .attr("d", line(data));
 
-        ///***Introducing data in an extra environment: points of the line chart***
-        svg.selectAll('.ot503')
-            .data(data).enter()
-            .append('circle') //points
-            .attr('class', 'point temperature')
-            .attr("transform", "translate(" + barWidth/2*(1-0.3) + ",0)")
-            .attr('cx', function(d) { return x(d.month); })
-            .attr('cy', function(d) { return y0(d.temperature); })
-            .attr('r', 4)
-            .on("mouseover", function (d) { showPopoverLine.call(this, d); })
-            .on("mouseout",  function (d) { removePopovers(); });
 
-        ///***Definition of legend***
-        ///LABELS FOR THE PRIMARY AND SECONDARY ENVIRONMENT
-        var labels = attrs.labels || {
-            0: 'Consumption',
-            1: 'Temperature',
-        };
-
-        var units = attrs.units || {
-            0: 'kWh/month',
-            1: 'ºC',
-        };
-
-        ///UPPER VISUALIZATION FOR THE TEXT (LABELS)
-        ///yAxisLeft
-        svg.append("g") 
-        .attr("class", "y axis")
-        //.attr("transform", "translate(-5,0)") //move to left
-        .call(yAxisLeft)
-            .style("font-size", "66%")
-            //.style("font-weight", "bold")
-            .style("text-anchor", "start") 
-            .append("text")
-            .style("font-size", "112%")
-            .style("text-transform", "uppercase")
-            .attr('dy', '-1.05em')
-            //.attr('dx', '4.8em') //left xtreme
-            .attr('dx', '9.7em')
-            .text(labels[0]);
-
-        svg.append("g") 
-        .attr("class", "y axis")
-        //.attr("transform", "translate(-5,0)") //move to left
-        //.call(yAxisLeft)
-            .append("text")
-            .attr("dy", "-0.1em")
-            .attr('dx', '-2.2em')       
-            .style("font-size", "66%")
-            //.style("font-weight", "bold")
+        svg.append("text")
+            .attr("class", "y axis")
+            .style("font-size", "61%")
+            .attr("transform", "translate(" + (width/2+100) + ","+(height+19)+")")
             .style("text-anchor", "start")
-            .text(units[0]);
-
-        ///yAxisRight
-        svg.append("g") 
-        .attr("class", "y axis") 
-        .attr("transform", "translate(" + (width) + " ,0)") //move to right
-        .call(yAxisRight)
-            .style("font-size", "66%")
-            //.style("font-weight", "bold")
-            .style("text-anchor", "start") 
-            .append("text")
-            .style("font-size", "112%")
-            .style("text-transform", "uppercase")
-            .attr('dy', '-1.05em')
-            //.attr('dx', '1.5em') //right xtreme
-            .attr('dx', '-12.4em')
-            .text(labels[1]);
-
-        svg.append("g") 
-        .attr("class", "y axis") 
-        .attr("transform", "translate(" + (width) + " ,0)") //move to right
-        //.call(yAxisRight)
-            .append("text")
-            .attr("dy", "-0.1em")
-            .attr('dx', '1.7em')       
-            .style("font-size", "66%")
-            //.style("font-weight", "bold")
-            .style("text-anchor", "end")
-            .text(units[1]);
-
-        ///VISUALIZATION FOR LEGEND OF THE BAR CHART
-        //BOTTOM
-        /*var legendBar = svg.append("rect")
-              .attr("class", "bar")
-              .attr("x", width/2.5-50)
-              .attr("y", height + margin.bottom/1.25)
-              .attr("width", x.rangeBand())
-              .attr("height", 10);*/
-        ///UPPER
-        var legendBar = svg.append("rect")
-              .attr("class", "bar")
-              //.attr("x", 5-margin.left) //left xtreme
-              .attr("x", 170-margin.left)
-              .attr("y", 18-margin.top)
-              //.attr('dy', 'width-5em')
-              //.attr('dx', '0.4em')
-              .attr("width", x.rangeBand())
-              .attr("height", 15);
-        ///VISUALIZATION FOR LEGEND OF THE POINTS OF THE LINE CHART 
-        //BOTTOM
-        /*var legendCircle = svg.append('circle')
-                .attr('class', 'point temperature')
-                .attr("cx", width/2.5+x.rangeBand()*2.5)
-                .attr("cy", 0)
-                .attr('r', 4);*/
-        ///UPPER
-        var legendCircle = svg.append('circle')
-                .attr('class', 'point temperature')
-                //.attr("cx", width-155+1.1*x.rangeBand()/2) //right xtreme
-                .attr("cx", width-265+1.1*x.rangeBand()/2)
-                .attr("cy", 25.5-margin.top)
-                .attr('r', 6);
-
+            .text(labels[0]);
         ///VISUALIZATION FOR LEGEND OF THE LINE CHART 
         //BOTTOM
         /*var legendLine = svg.append("rect")
@@ -2241,15 +2101,103 @@ var Empowering = {};
         var legendLine = svg.append("rect")
                 .attr("class", "line temperature")
                 //.attr("x", width-155) //right xtreme
-                .attr("x", width-265) 
-                .attr("y", 25.5-margin.top)
-                .attr("width", 1.1*x.rangeBand())
+                .attr("transform", "translate(" + (width/2+70)+ ","+(height+12)+")")
+                //.attr("x", width-265) 
+                //.attr("y", 25.5-margin.top)
+                .attr("width", 24)
                 .attr("height", 1)
                 .style("stroke-width", "1px");
+        ///***Introducing data in an extra environment: points of the line chart***
+        /*svg.selectAll('.ot503')
+            .data(data).enter()
+            .append('circle') //points
+            .attr('class', 'point temperature')
+            .attr("transform", "translate(" + barWidth/2*(1-0.3) + ",0)")
+            .attr('cx', function(d) { return x(d.month); })
+            .attr('cy', function(d) { return y0(d.temperature); })
+            .attr('r', 4)
+            .on("mouseover", function (d) { showPopoverLine.call(this, d); })
+            .on("mouseout",  function (d) { removePopovers(); });*/
+
+        ///VISUALIZATION FOR THE TEXT
+        /*[0, 1, 2].forEach(function(idx) {
+            svg.append('g')
+                .attr('class', 'legend')
+                .append('text')
+                .attr('x', 130+(idx*width/3.1))
+                .attr('y', height + margin.bottom/1.2)
+                .attr('class', styles[idx]) ///when a specific style is defined in CSS file, put it here
+                .text(labels[idx]);
+        });*/
+
+        var legend = svg.selectAll(".legend")
+            .data(seriesNames.slice())//seriesNames.slice().reverse())
+        .enter().append("g")
+            .attr("class", "y axis")
+            .style("font-size", "61%")
+            .attr("transform", function (d, i) { console.log("f",i*width/6); return "translate(" +(i*width/5-width) + ","+(height+10)+")"; });
+
+        legend.append("rect")
+            .attr("x", width - 24 +40)
+            .attr("width", 24)
+            .attr("height", 9)
+            .style("fill", color);
+
+        legend.append("text")
+            .attr("x", width - 24 +40+24+5)
+            .attr("y", 9)
+            //.attr("dy", ".35em")
+            .style("text-anchor", "start")
+            .text(function (d,i) { return labels[i+1]; });
+            //.on("click", function (d) {
+            //   alert(d);});
+
+
+
+
+        ///VISUALIZATION FOR LEGEND OF THE BAR CHART
+        //BOTTOM
+        /*var legendBar = svg.append("rect")
+              .attr("class", "bar")
+              .attr("x", width/2.5-50)
+              .attr("y", height + margin.bottom/1.25)
+              .attr("width", x0.rangeBand())
+              .attr("height", 10);*/
+        ///UPPER
+        /*var legendBar = svg.append("rect")
+              .attr("class", "bar")
+              //.attr("x", 5-margin.left) //left xtreme
+              //.attr("x", 170-margin.left)
+              //.attr("y", 18-margin.top)
+              .attr("width", x1.rangeBand())
+              .attr("x", 170-margin.left+function (d) { return x1(d.name); })
+              .attr("y", 18-margin.top+function (d) { return y(d.value); })
+              //.attr("height", function (d) { return height - y(d.value); })
+              //.style("fill", function (d) { return color(d.name); });
+              //.attr('dy', 'width-5em')
+              //.attr('dx', '0.4em')
+              //.attr("width", x0.rangeBand())
+              .attr("height", 15);*/
+        ///VISUALIZATION FOR LEGEND OF THE POINTS OF THE LINE CHART 
+        //BOTTOM
+        /*var legendCircle = svg.append('circle')
+                .attr('class', 'point temperature')
+                .attr("cx", width/2.5+x.rangeBand()*2.5)
+                .attr("cy", 0)
+                .attr('r', 4);*/
+        ///UPPER
+        /*var legendCircle = svg.append('circle')
+                .attr('class', 'point temperature')
+                //.attr("cx", width-155+1.1*x.rangeBand()/2) //right xtreme
+                .attr("cx", width-265+1.1*x.rangeBand()/2)
+                .attr("cy", 25.5-margin.top)
+                .attr('r', 6);*/
+
+
 
         ///***Definition of functions for dynamisation of chart***
         ///WHEN NO OVER 
-        function removePopovers () {
+        /*function removePopovers () {
         $('.popover').each(function() {
           $(this).remove();
         }); 
@@ -2281,7 +2229,7 @@ var Empowering = {};
             }
         });
         $(this).popover('show')
-        }
+        }*/
 
         return ct410;
     };
